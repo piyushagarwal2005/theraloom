@@ -1,7 +1,9 @@
 const express = require('express');
 const {
   getSlotsBySlug,
+  getAvailableSlots,
   bookSession,
+  bookSessionDirect,
   getMyAvailability,
   updateMyAvailability,
   getTherapistSessions,
@@ -14,8 +16,11 @@ const router = express.Router();
 
 // Public routes for clients
 router.get('/slots/:slug', getSlotsBySlug);
+router.get('/available-slots', getAvailableSlots);
 router.post('/book/:slug', bookSession);
+router.post('/book-session', bookSessionDirect);
 router.post('/waitlist/:slug', joinWaitlist);
+router.post('/waitlist', joinWaitlist);
 
 // Therapist protected routes
 router.get('/availability', protectTherapist, getMyAvailability);

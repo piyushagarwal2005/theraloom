@@ -223,6 +223,69 @@ async function run() {
     assert.strictEqual(analyticsAccess.allowed, true);
   });
 
+  console.log('\n📦 Module 8: Client Portal, Booking API & Direct Thread Creation');
+  const clientController = require('../src/controllers/clientController');
+  const chatController = require('../src/controllers/chatController');
+
+  await it('Portal lookup retrieves client records, confirmed sessions & invoices by email', async () => {
+    let responseData = null;
+    let statusCode = null;
+    const req = { query: { email: 'kunal.j@example.com' } };
+    const res = {
+      status: (code) => { statusCode = code; return res; },
+      json: (data) => { responseData = data; return res; },
+    };
+    await clientController.portalLookup(req, res, (err) => { if (err) throw err; });
+    assert.strictEqual(statusCode, 200);
+    assert.strictEqual(responseData.success, true);
+    assert.strictEqual(responseData.client.email, 'kunal.j@example.com');
+    assert(responseData.sessions.length > 0, 'Should find booked sessions');
+  });
+
+  await it('Portal intake update updates demographics and goals', async () => {
+    let responseData = null;
+    let statusCode = null;
+    const req = {
+      params: { id: testClient._id },
+      body: {
+        demographics: { occupation: 'Lead Architect', city: 'Bengaluru' },
+        therapyGoals: 'Achieve emotional balance and mindfulness.',
+        presentingConcerns: ['Burnout', 'Work Stress'],
+      },
+    };
+    const res = {
+      status: (code) => { statusCode = code; return res; },
+      json: (data) => { responseData = data; return res; },
+    };
+    await clientController.updateClientIntake(req, res, (err) => { if (err) throw err; });
+    assert.strictEqual(statusCode, 200);
+    assert.strictEqual(responseData.success, true);
+    assert.strictEqual(responseData.client.intakeForm.demographics.city, 'Bengaluru');
+    assert.strictEqual(responseData.client.intakeForm.therapyGoals, 'Achieve emotional balance and mindfulness.');
+  });
+
+  await it('Client chat thread creation succeeds by therapistId and clientId', async () => {
+    let responseData = null;
+    let statusCode = null;
+    const req = {
+      body: {
+        therapistId: testTherapist._id,
+        clientId: testClient._id,
+        clientName: testClient.name,
+        clientEmail: testClient.email,
+      },
+    };
+    const res = {
+      status: (code) => { statusCode = code; return res; },
+      json: (data) => { responseData = data; return res; },
+    };
+    await chatController.getClientConversation(req, res, (err) => { if (err) throw err; });
+    assert.strictEqual(statusCode, 200);
+    assert.strictEqual(responseData.success, true);
+    assert(responseData.conversationId, 'Should return conversationId');
+    assert(responseData.conversation, 'Should return conversation object');
+  });
+
   console.log('\n======================================================');
   console.log(`📊 Test Results: ${passedTests} Passed, ${failedTests} Failed`);
   console.log('======================================================\n');

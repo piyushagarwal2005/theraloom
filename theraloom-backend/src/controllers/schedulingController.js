@@ -2,15 +2,16 @@ const Therapist = require('../models/Therapist');
 const Availability = require('../models/Availability');
 const Session = require('../models/Session');
 const Lead = require('../models/Lead');
+const Client = require('../models/Client');
+const Payment = require('../models/Payment');
 const schedulingService = require('../services/schedulingService');
 
-// @desc    Get available slots for a therapist on a date
-// @route   GET /api/v1/scheduling/slots/:slug
+// @desc    Get available slots for a therapist on a date (by query params: therapistId or slug)
+// @route   GET /api/v1/scheduling/available-slots
 // @access  Public
-exports.getSlotsBySlug = async (req, res, next) => {
+exports.getAvailableSlots = async (req, res, next) => {
   try {
-    const { slug } = req.params;
-    const { date, timezone = 'Asia/Kolkata' } = req.query;
+    const { therapistId, slug, date, timezone = 'Asia/Kolkata' } = req.query;
 
     if (!date) {
       return res.status(400).json({
@@ -19,7 +20,13 @@ exports.getSlotsBySlug = async (req, res, next) => {
       });
     }
 
-    const therapist = await Therapist.findOne({ slug: slug.toLowerCase(), isActive: true });
+    let therapist = null;
+    if (therapistId) {
+      therapist = await Therapist.findById(therapistId);
+    } else if (slug) {
+      therapist = await Therapist.findOne({ slug: slug.toLowerCase(), isActive: true });
+    }
+
     if (!therapist) {
       return res.status(404).json({ success: false, message: 'Therapist not found.' });
     }
@@ -30,6 +37,7 @@ exports.getSlotsBySlug = async (req, res, next) => {
       success: true,
       therapist: {
         id: therapist._id,
+        _id: therapist._id,
         name: therapist.name,
         slug: therapist.slug,
         title: therapist.title,
@@ -45,12 +53,21 @@ exports.getSlotsBySlug = async (req, res, next) => {
   }
 };
 
-// @desc    Book a session atomically
-// @route   POST /api/v1/scheduling/book/:slug
+// @desc    Get available slots for a therapist on a date (by slug in URL param)
+// @route   GET /api/v1/scheduling/slots/:slug
+// @access  Public
+exports.getSlotsBySlug = async (req, res, next) => {
+  req.query.slug = req.params.slug;
+  return exports.getAvailableSlots(req, res, next);
+};
+
+// @desc    Book a session atomically (supports both /book/:slug and /book-session with therapistId in body)
+// @route   POST /api/v1/scheduling/book/:slug OR POST /api/v1/scheduling/book-session
 // @access  Public
 exports.bookSession = async (req, res, next) => {
   try {
-    const { slug } = req.params;
+    const slug = req.params.slug || req.body.slug;
+    const therapistId = req.body.therapistId;
     const {
       clientName,
       clientEmail,
@@ -60,6 +77,11 @@ exports.bookSession = async (req, res, next) => {
       date,
       startTime,
       price,
+      presentingConcern,
+      consentAgreed,
+      consentTimestamp,
+      razorpayOrderId,
+      razorpayPaymentId,
     } = req.body;
 
     if (!clientName || !clientEmail || !date || !startTime) {
@@ -69,11 +91,20 @@ exports.bookSession = async (req, res, next) => {
       });
     }
 
-    const therapist = await Therapist.findOne({ slug: slug.toLowerCase(), isActive: true });
+    let therapist = null;
+    if (therapistId) {
+      therapist = await Therapist.findById(therapistId);
+    } else if (slug) {
+      therapist = await Therapist.findOne({ slug: slug.toLowerCase(), isActive: true });
+    }
+
     if (!therapist) {
       return res.status(404).json({ success: false, message: 'Therapist not found.' });
     }
 
+    const sessionPrice = price || therapist.consultationFee || 1800;
+
+    // 1. Atomic booking through scheduling service
     const session = await schedulingService.bookSession(therapist._id, {
       clientName,
       clientEmail,
@@ -82,9 +113,54 @@ exports.bookSession = async (req, res, next) => {
       durationMinutes: durationMinutes || 50,
       date,
       startTime,
-      price: price || therapist.consultationFee || 1800,
-      paymentStatus: 'paid', // In test mode or post-Razorpay verification
+      price: sessionPrice,
+      paymentStatus: 'paid',
     });
+
+    // 2. Enhance client record with consent & presenting concerns
+    const client = await Client.findById(session.clientId);
+    if (client) {
+      if (consentAgreed) {
+        client.consentRecords.push({
+          version: '1.0',
+          termsSummary: 'Theraloom Tele-Mental Health & Confidentiality Consent (Under Indian Mental Healthcare Act 2017)',
+          agreed: true,
+          consentedAt: consentTimestamp ? new Date(consentTimestamp) : new Date(),
+          ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
+          userAgent: req.headers['user-agent'] || '',
+        });
+      }
+
+      if (presentingConcern) {
+        if (!client.intakeForm) client.intakeForm = {};
+        if (!client.intakeForm.presentingConcerns) client.intakeForm.presentingConcerns = [];
+        if (!client.intakeForm.presentingConcerns.includes(presentingConcern)) {
+          client.intakeForm.presentingConcerns.push(presentingConcern);
+        }
+      }
+
+      await client.save();
+
+      // 3. Persist Payment record for client portal & invoices
+      const invoiceNumber = `TL-INV-${Date.now().toString().slice(-6)}`;
+      await Payment.create({
+        therapistId: therapist._id,
+        clientId: client._id,
+        clientName,
+        clientEmail: clientEmail.toLowerCase(),
+        sessionId: session._id,
+        amount: sessionPrice,
+        currency: 'INR',
+        status: 'captured',
+        paymentMethod: 'upi',
+        invoiceNumber,
+        taxAmount: Math.round(sessionPrice * 0.18),
+        platformFee: Math.round(sessionPrice * 0.02),
+        netAmount: Math.round(sessionPrice * 0.98),
+        razorpayOrderId: razorpayOrderId || `order_${Date.now()}`,
+        razorpayPaymentId: razorpayPaymentId || `pay_${Date.now()}`,
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -95,6 +171,9 @@ exports.bookSession = async (req, res, next) => {
     next(error);
   }
 };
+
+// Alias for direct booking route
+exports.bookSessionDirect = exports.bookSession;
 
 // @desc    Get therapist's own availability configuration
 // @route   GET /api/v1/scheduling/availability
@@ -210,14 +289,21 @@ exports.updateSessionStatus = async (req, res, next) => {
 };
 
 // @desc    Join waitlist when a slot or day is full
-// @route   POST /api/v1/scheduling/waitlist/:slug
+// @route   POST /api/v1/scheduling/waitlist/:slug OR POST /api/v1/scheduling/waitlist
 // @access  Public
 exports.joinWaitlist = async (req, res, next) => {
   try {
-    const { slug } = req.params;
+    const slug = req.params.slug || req.body.slug;
+    const therapistId = req.body.therapistId;
     const { clientName, clientEmail, clientPhone, preferredDate, preferredTimeRange, message } = req.body;
 
-    const therapist = await Therapist.findOne({ slug: slug.toLowerCase(), isActive: true });
+    let therapist;
+    if (therapistId) {
+      therapist = await Therapist.findById(therapistId);
+    } else if (slug) {
+      therapist = await Therapist.findOne({ slug: slug.toLowerCase(), isActive: true });
+    }
+
     if (!therapist) {
       return res.status(404).json({ success: false, message: 'Therapist not found.' });
     }

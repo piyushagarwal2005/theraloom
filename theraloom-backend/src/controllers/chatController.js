@@ -28,23 +28,39 @@ exports.getTherapistConversations = async (req, res, next) => {
 // @access  Public
 exports.getClientConversation = async (req, res, next) => {
   try {
-    const { therapistSlug, clientEmail, clientName } = req.body;
+    const { therapistSlug, therapistId, clientId, clientEmail, clientName } = req.body;
 
-    const therapist = await Therapist.findOne({ slug: therapistSlug.toLowerCase() });
+    let therapist = null;
+    if (therapistId) {
+      therapist = await Therapist.findById(therapistId);
+    } else if (therapistSlug) {
+      therapist = await Therapist.findOne({ slug: therapistSlug.toLowerCase() });
+    } else if (clientId) {
+      const foundClient = await Client.findById(clientId);
+      if (foundClient) {
+        therapist = await Therapist.findById(foundClient.therapistId);
+      }
+    }
+
     if (!therapist) {
       return res.status(404).json({ success: false, message: 'Therapist not found.' });
     }
 
-    let client = await Client.findOne({
-      therapistId: therapist._id,
-      email: clientEmail.toLowerCase(),
-    });
+    let client = null;
+    if (clientId) {
+      client = await Client.findById(clientId);
+    } else if (clientEmail) {
+      client = await Client.findOne({
+        therapistId: therapist._id,
+        email: clientEmail.toLowerCase(),
+      });
+    }
 
     if (!client) {
       client = await Client.create({
         therapistId: therapist._id,
         name: clientName || 'Client',
-        email: clientEmail.toLowerCase(),
+        email: clientEmail ? clientEmail.toLowerCase() : `client_${Date.now()}@theraloom.in`,
         status: 'active',
       });
     }
@@ -65,9 +81,11 @@ exports.getClientConversation = async (req, res, next) => {
     res.status(200).json({
       success: true,
       conversationId: conversation._id,
+      conversation,
       client,
       therapist: {
         id: therapist._id,
+        _id: therapist._id,
         name: therapist.name,
         title: therapist.title,
         profileImage: therapist.profileImage,

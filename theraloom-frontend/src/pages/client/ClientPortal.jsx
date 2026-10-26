@@ -604,9 +604,9 @@ export default function ClientPortal() {
                               <p className="text-[10px] text-[#7D9D8B]">Paid</p>
                             </div>
 
-                            {p.invoiceUrl && (
+                            {(p.invoiceUrl || p._id) && (
                               <a
-                                href={p.invoiceUrl}
+                                href={p.invoiceUrl || `/api/v1/payments/${p._id}/invoice`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="p-2 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] text-[#19382C] hover:bg-[#E8EFEA] transition-colors"

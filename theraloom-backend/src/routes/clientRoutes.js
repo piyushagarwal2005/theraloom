@@ -1,5 +1,7 @@
 const express = require('express');
 const {
+  portalLookup,
+  updateClientIntake,
   getClients,
   getClientById,
   createClient,
@@ -11,8 +13,10 @@ const { protectTherapist } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Public routes for clients during booking/onboarding
+// Public routes for clients during booking/onboarding/portal
+router.get('/portal-lookup', portalLookup);
 router.post('/intake', submitIntake);
+router.put('/:id/intake', updateClientIntake);
 router.post('/consent', submitConsent);
 
 // Protected routes for therapist CRM

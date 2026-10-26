@@ -15,9 +15,15 @@ const fs = require('fs');
 // @access  Public
 exports.createOrder = async (req, res, next) => {
   try {
-    const { therapistSlug, amount, type, sessionId, packageId, clientName, clientEmail } = req.body;
+    const { therapistSlug, therapistId, amount, type, sessionId, packageId, clientName, clientEmail } = req.body;
 
-    const therapist = await Therapist.findOne({ slug: therapistSlug.toLowerCase() });
+    let therapist = null;
+    if (therapistId) {
+      therapist = await Therapist.findById(therapistId);
+    } else if (therapistSlug) {
+      therapist = await Therapist.findOne({ slug: therapistSlug.toLowerCase() });
+    }
+
     if (!therapist) {
       return res.status(404).json({ success: false, message: 'Therapist not found.' });
     }
@@ -35,6 +41,7 @@ exports.createOrder = async (req, res, next) => {
     res.status(200).json({
       success: true,
       order: orderData,
+      data: orderData,
       keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_theraloom_key123',
     });
   } catch (error) {
@@ -52,6 +59,7 @@ exports.verifyPayment = async (req, res, next) => {
       razorpayPaymentId,
       razorpaySignature,
       therapistSlug,
+      therapistId,
       clientName,
       clientEmail,
       amount,
@@ -74,7 +82,13 @@ exports.verifyPayment = async (req, res, next) => {
       });
     }
 
-    const therapist = await Therapist.findOne({ slug: therapistSlug.toLowerCase() });
+    let therapist = null;
+    if (therapistId) {
+      therapist = await Therapist.findById(therapistId);
+    } else if (therapistSlug) {
+      therapist = await Therapist.findOne({ slug: therapistSlug.toLowerCase() });
+    }
+
     if (!therapist) {
       return res.status(404).json({ success: false, message: 'Therapist not found.' });
     }

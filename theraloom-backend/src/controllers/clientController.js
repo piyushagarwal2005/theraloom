@@ -4,6 +4,83 @@ const Payment = require('../models/Payment');
 const SessionNote = require('../models/SessionNote');
 const entitlementService = require('../services/entitlementService');
 
+// @desc    Client portal records lookup by email
+// @route   GET /api/v1/clients/portal-lookup
+// @access  Public
+exports.portalLookup = async (req, res, next) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an email address to look up your portal records.',
+      });
+    }
+
+    const client = await Client.findOne({ email: email.toLowerCase().trim() })
+      .populate('therapistId', 'name title slug profileImage consultationFee phone email specializations');
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'No client records found for this email address. Please make sure you booked with this exact email.',
+      });
+    }
+
+    const sessions = await Session.find({ clientId: client._id })
+      .populate('therapistId', 'name title slug profileImage consultationFee phone email')
+      .sort({ startTime: -1 });
+
+    const payments = await Payment.find({ clientId: client._id }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      client,
+      sessions,
+      payments,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update client digital intake records from client portal
+// @route   PUT /api/v1/clients/:id/intake
+// @access  Public (or Client-authenticated)
+exports.updateClientIntake = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { demographics, presentingConcerns, therapyGoals, priorTherapyExperience, medicalHistory, emergencyContact } = req.body;
+
+    const client = await Client.findById(id);
+    if (!client) {
+      return res.status(404).json({ success: false, message: 'Client not found.' });
+    }
+
+    client.intakeForm = {
+      isCompleted: true,
+      completedAt: new Date(),
+      demographics: demographics || client.intakeForm?.demographics || {},
+      presentingConcerns: presentingConcerns || client.intakeForm?.presentingConcerns || [],
+      therapyGoals: therapyGoals || client.intakeForm?.therapyGoals || '',
+      priorTherapyExperience: priorTherapyExperience || client.intakeForm?.priorTherapyExperience || 'No',
+      medicalHistory: medicalHistory || client.intakeForm?.medicalHistory || '',
+      emergencyContact: emergencyContact || client.intakeForm?.emergencyContact || {},
+    };
+
+    await client.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Intake form updated successfully.',
+      client,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get all clients for therapist (searchable, filterable, sortable)
 // @route   GET /api/v1/clients
 // @access  Private (Therapist)
@@ -262,7 +339,7 @@ exports.submitConsent = async (req, res, next) => {
       termsSummary: 'Theraloom Tele-Mental Health & Confidentiality Consent (Under Indian Mental Healthcare Act 2017)',
       agreed: true,
       consentedAt: new Date(),
-      ipAddress: req.ip || req.connection.remoteAddress || '127.0.0.1',
+      ipAddress: req.ip || req.connection?.remoteAddress || '127.0.0.1',
       userAgent: req.headers['user-agent'] || '',
     };
 

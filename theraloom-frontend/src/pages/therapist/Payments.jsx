@@ -267,9 +267,9 @@ export default function Payments() {
                           </td>
 
                           <td className="py-4 px-6 text-right">
-                            {p.invoiceUrl ? (
+                            {p.invoiceUrl || p._id ? (
                               <a
-                                href={p.invoiceUrl}
+                                href={p.invoiceUrl || `/api/v1/payments/${p._id}/invoice`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#EAE5DE] bg-[#FAF8F5] text-xs font-semibold text-[#19382C] hover:bg-[#E8EFEA] transition-colors"
