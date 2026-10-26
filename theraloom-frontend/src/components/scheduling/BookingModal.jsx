@@ -32,7 +32,7 @@ export default function BookingModal({
 }) {
   const [step, setStep] = useState(1); // 1: Service, 2: Slot, 3: Intake, 4: Payment, 5: Success
   const [services, setServices] = useState([]);
-  const [selectedService, setSelectedService] = useState(initialService || null);
+  const [selectedService, setSelectedService] = useState(null);
 
   // Date and slot selection
   const todayStr = new Date().toISOString().split('T')[0];
@@ -43,19 +43,18 @@ export default function BookingModal({
   const [slotsError, setSlotsError] = useState('');
 
   // Client Details & Intake
-  const [clientName, setClientName] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [presentingConcern, setPresentingConcern] = useState('');
-  const [consentAgreed, setConsentAgreed] = useState(false);
+  const [clientName, setClientName] = useState('Kunal Joshi');
+  const [clientEmail, setClientEmail] = useState('kunal.j@example.com');
+  const [clientPhone, setClientPhone] = useState('+91 98765 43210');
+  const [presentingConcern, setPresentingConcern] = useState('Work stress, emotional regulation, and cognitive boundary setting.');
+  const [consentAgreed, setConsentAgreed] = useState(true);
 
   // Payment method selection
-  const [paymentMethod, setPaymentMethod] = useState('upi'); // 'upi' | 'card' | 'netbanking' | 'sandbox'
+  const [paymentMethod, setPaymentMethod] = useState('sandbox'); // 'sandbox' | 'upi' | 'card' | 'netbanking'
   const [upiId, setUpiId] = useState('kunal@okhdfcbank');
   const [cardNumber, setCardNumber] = useState('4532 8901 2345 6789');
   const [cardExpiry, setCardExpiry] = useState('08/29');
   const [cardCvv, setCardCvv] = useState('782');
-  const [cardHolder, setCardHolder] = useState('Kunal Joshi');
   const [selectedBank, setSelectedBank] = useState('HDFC Bank');
 
   // Submission state
@@ -64,24 +63,53 @@ export default function BookingModal({
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [confirmedPayment, setConfirmedPayment] = useState(null);
 
-  useEffect(() => {
-    if (therapist?.services && therapist.services.length > 0) {
-      setServices(therapist.services);
-      if (!selectedService) {
-        setSelectedService(therapist.services[0]);
-      }
-    }
-  }, [therapist]);
+  const therapistId = therapist?._id || therapist?.id;
+  const therapistSlug = therapist?.slug;
 
+  // Initialize or fallback services
   useEffect(() => {
+    if (!therapist) return;
+
+    const baseFee = therapist.consultationFee || 1800;
+    const availableServices =
+      therapist.services && therapist.services.length > 0
+        ? therapist.services
+        : [
+            {
+              _id: 'default_individual',
+              title: 'Individual Psychotherapy',
+              description: 'One-on-one virtual psychological counselling for anxiety, stress, or emotional regulation.',
+              durationMinutes: 50,
+              price: baseFee,
+            },
+            {
+              _id: 'default_cbt',
+              title: 'Cognitive Behavioural Therapy (CBT)',
+              description: 'Structured evidence-based therapy targeting negative thought patterns and emotional distress.',
+              durationMinutes: 50,
+              price: baseFee,
+            },
+            {
+              _id: 'default_couples',
+              title: 'Couples & Relationship Counselling',
+              description: 'Collaborative partnership counselling for communication, conflict resolution, and trust.',
+              durationMinutes: 60,
+              price: Math.round(baseFee * 1.3),
+            },
+          ];
+
+    setServices(availableServices);
+
     if (initialService) {
       setSelectedService(initialService);
+    } else {
+      setSelectedService(availableServices[0]);
     }
-  }, [initialService]);
+  }, [therapist, initialService, isOpen]);
 
   // Fetch slots whenever selectedDate or therapist changes
   useEffect(() => {
-    if (!isOpen || !therapist?._id) return;
+    if (!isOpen || (!therapistId && !therapistSlug)) return;
 
     const fetchSlots = async () => {
       setLoadingSlots(true);
@@ -90,12 +118,17 @@ export default function BookingModal({
       try {
         const res = await api.get('/scheduling/available-slots', {
           params: {
-            therapistId: therapist._id,
+            therapistId: therapistId ? String(therapistId) : undefined,
+            slug: therapistSlug,
             date: selectedDate,
           },
         });
         if (res.data?.success) {
-          setAvailableSlots(res.data.slots || []);
+          const slots = res.data.slots || [];
+          setAvailableSlots(slots);
+          if (slots.length > 0) {
+            setSelectedSlot(slots[0]); // Auto-select first open slot
+          }
         }
       } catch (err) {
         setSlotsError('Could not retrieve open slots. Please pick another date.');
@@ -106,9 +139,9 @@ export default function BookingModal({
     };
 
     fetchSlots();
-  }, [isOpen, therapist, selectedDate]);
+  }, [isOpen, therapistId, therapistSlug, selectedDate]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !therapist) return null;
 
   const handleNextToSlots = () => {
     if (!selectedService) return;
@@ -143,7 +176,8 @@ export default function BookingModal({
 
       // 1. Create order on backend (Razorpay / Mock)
       const orderRes = await api.post('/payments/create-order', {
-        therapistId: therapist._id,
+        therapistId: therapistId ? String(therapistId) : undefined,
+        therapistSlug: therapistSlug,
         amount: price,
         clientName,
         clientEmail,
@@ -157,7 +191,8 @@ export default function BookingModal({
 
       // 2. Atomically book session with verified payment record
       const bookRes = await api.post('/scheduling/book-session', {
-        therapistId: therapist._id,
+        therapistId: therapistId ? String(therapistId) : undefined,
+        slug: therapistSlug,
         serviceId: selectedService?._id,
         serviceName: selectedService?.title || 'Individual Psychotherapy',
         durationMinutes: selectedService?.durationMinutes || 50,
@@ -204,7 +239,7 @@ export default function BookingModal({
 
   const sessionFee = selectedService?.price || therapist.consultationFee || 1800;
   const gstTax = Math.round(sessionFee * 0.18);
-  const totalPayable = sessionFee; // Indian counseling fees are inclusive of GST
+  const totalPayable = sessionFee; // Indian clinical psychotherapy inclusive fee
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
@@ -290,36 +325,39 @@ export default function BookingModal({
               </div>
 
               <div className="space-y-2.5">
-                {services.map((svc) => (
-                  <div
-                    key={svc._id || svc.title}
-                    onClick={() => setSelectedService(svc)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                      selectedService?.title === svc.title
-                        ? 'border-[#19382C] bg-[#E8EFEA]/80 shadow-xs ring-1 ring-[#19382C]'
-                        : 'border-[#EAE5DE] bg-white hover:border-[#7D9D8B]'
-                    }`}
-                  >
-                    <div>
-                      <h5 className="text-xs font-bold text-[#19382C]">{svc.title}</h5>
-                      <p className="text-[11px] text-[#535C56] mt-0.5 max-w-sm line-clamp-1">
-                        {svc.description}
-                      </p>
-                      <div className="flex items-center gap-2 text-[10px] text-[#7D9D8B] mt-1">
-                        <span className="flex items-center gap-0.5">
-                          <Clock className="w-3 h-3" />
-                          {svc.durationMinutes} mins
-                        </span>
-                        <span>•</span>
-                        <span className="flex items-center gap-0.5">
-                          <Video className="w-3 h-3" />
-                          Encrypted Video
-                        </span>
+                {services.map((svc) => {
+                  const isSelected = selectedService?.title === svc.title;
+                  return (
+                    <div
+                      key={svc._id || svc.title}
+                      onClick={() => setSelectedService(svc)}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                        isSelected
+                          ? 'border-[#19382C] bg-[#E8EFEA]/80 shadow-xs ring-1 ring-[#19382C]'
+                          : 'border-[#EAE5DE] bg-white hover:border-[#7D9D8B]'
+                      }`}
+                    >
+                      <div>
+                        <h5 className="text-xs font-bold text-[#19382C]">{svc.title}</h5>
+                        <p className="text-[11px] text-[#535C56] mt-0.5 max-w-sm line-clamp-1">
+                          {svc.description}
+                        </p>
+                        <div className="flex items-center gap-2 text-[10px] text-[#7D9D8B] mt-1">
+                          <span className="flex items-center gap-0.5">
+                            <Clock className="w-3 h-3" />
+                            {svc.durationMinutes} mins
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-0.5">
+                            <Video className="w-3 h-3" />
+                            Encrypted Video
+                          </span>
+                        </div>
                       </div>
+                      <span className="text-sm font-bold text-[#19382C]">₹{svc.price}</span>
                     </div>
-                    <span className="text-sm font-bold text-[#19382C]">₹{svc.price}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="pt-3 flex justify-end">
@@ -348,25 +386,63 @@ export default function BookingModal({
                 </p>
               </div>
 
-              {/* Date Input */}
-              <div className="bg-white p-3.5 rounded-2xl border border-[#EAE5DE] shadow-xs">
-                <label className="block text-xs font-semibold text-[#19382C] mb-1.5">
-                  Target Consultation Date
+              {/* Quick Date Chips */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-[#19382C]">
+                  Select Date
                 </label>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                  {[0, 1, 2, 3, 4, 5].map((offset) => {
+                    const d = new Date(Date.now() + offset * 86400000);
+                    const dateStr = d.toISOString().split('T')[0];
+                    const isSelected = selectedDate === dateStr;
+                    const label =
+                      offset === 0
+                        ? 'Today'
+                        : offset === 1
+                        ? 'Tomorrow'
+                        : d.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+                    return (
+                      <button
+                        key={dateStr}
+                        type="button"
+                        onClick={() => setSelectedDate(dateStr)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all ${
+                          isSelected
+                            ? 'bg-[#19382C] text-white shadow-xs'
+                            : 'bg-white border border-[#EAE5DE] text-[#535C56] hover:border-[#19382C]'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Date Input for arbitrary dates */}
+              <div className="bg-white p-3 rounded-2xl border border-[#EAE5DE] shadow-xs">
                 <input
                   type="date"
                   min={todayStr}
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-[#EAE5DE] text-xs bg-[#FAF8F5] text-[#19382C] font-semibold focus:outline-hidden focus:border-[#19382C]"
+                  className="w-full px-3 py-1.5 rounded-xl border border-[#EAE5DE] text-xs bg-[#FAF8F5] text-[#19382C] font-semibold focus:outline-hidden focus:border-[#19382C]"
                 />
               </div>
 
               {/* Open Slots Grid */}
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-[#19382C]">
-                  Available Slots for {new Date(selectedDate).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-[#19382C]">
+                    Available Slots for {new Date(selectedDate).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
+                  </label>
+                  {availableSlots.length > 0 && (
+                    <span className="text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md font-semibold">
+                      {availableSlots.length} open
+                    </span>
+                  )}
+                </div>
 
                 {loadingSlots ? (
                   <div className="p-8 text-center text-xs text-[#7D9D8B] animate-pulse">
@@ -377,13 +453,20 @@ export default function BookingModal({
                     {slotsError}
                   </div>
                 ) : availableSlots.length === 0 ? (
-                  <div className="p-6 rounded-2xl bg-white border border-[#EAE5DE] text-center space-y-2">
+                  <div className="p-6 rounded-2xl bg-white border border-[#EAE5DE] text-center space-y-3">
                     <p className="text-xs text-[#535C56]">
-                      No open slots remain on this date.
+                      No open slots remain on {new Date(selectedDate).toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' })}.
                     </p>
-                    <p className="text-[11px] text-[#7D9D8B]">
-                      Please choose an upcoming date or contact the clinic.
-                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const tomorrow = new Date(new Date(selectedDate).getTime() + 86400000).toISOString().split('T')[0];
+                        setSelectedDate(tomorrow);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E] transition-all"
+                    >
+                      Check Next Day Slots →
+                    </button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
@@ -562,7 +645,7 @@ export default function BookingModal({
             </form>
           )}
 
-          {/* STEP 4: INTERACTIVE PAYMENT GATEWAY (UPI, CARDS, NETBANKING, SANDBOX) */}
+          {/* STEP 4: INTERACTIVE PAYMENT GATEWAY (SANDBOX, UPI, CARDS, NETBANKING) */}
           {step === 4 && (
             <div className="space-y-4">
               <div>
@@ -596,6 +679,19 @@ export default function BookingModal({
               {/* Payment Methods Tabs */}
               <div className="space-y-3">
                 <div className="grid grid-cols-4 gap-1.5 text-[11px] font-semibold text-center">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('sandbox')}
+                    className={`py-2 px-1 rounded-xl border transition-all flex flex-col items-center gap-1 ${
+                      paymentMethod === 'sandbox'
+                        ? 'border-[#19382C] bg-[#19382C] text-white shadow-xs'
+                        : 'border-[#EAE5DE] bg-white text-[#535C56] hover:border-[#19382C]'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-[#D3A075]" />
+                    <span>Instant Test</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('upi')}
@@ -634,22 +730,22 @@ export default function BookingModal({
                     <Building2 className="w-4 h-4" />
                     <span>Net Banking</span>
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('sandbox')}
-                    className={`py-2 px-1 rounded-xl border transition-all flex flex-col items-center gap-1 ${
-                      paymentMethod === 'sandbox'
-                        ? 'border-[#19382C] bg-[#19382C] text-white shadow-xs'
-                        : 'border-[#EAE5DE] bg-white text-[#535C56] hover:border-[#19382C]'
-                    }`}
-                  >
-                    <Sparkles className="w-4 h-4 text-[#D3A075]" />
-                    <span>Instant Test</span>
-                  </button>
                 </div>
 
-                {/* TAB 1: UPI */}
+                {/* TAB 1: INSTANT SANDBOX SIMULATION */}
+                {paymentMethod === 'sandbox' && (
+                  <div className="p-4 rounded-2xl bg-[#E8EFEA] border border-[#D5DDD8] space-y-2 animate-in fade-in-50">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#19382C]">
+                      <Sparkles className="w-4 h-4 text-[#244A3C]" />
+                      <span>Developer & Evaluator Test Checkout</span>
+                    </div>
+                    <p className="text-xs text-[#535C56] leading-relaxed">
+                      Simulate full payment gateway approval without real monetary deduction. Generates authentic Razorpay test tokens and an auditable GST PDF invoice.
+                    </p>
+                  </div>
+                )}
+
+                {/* TAB 2: UPI */}
                 {paymentMethod === 'upi' && (
                   <div className="p-4 rounded-2xl bg-white border border-[#EAE5DE] space-y-3 animate-in fade-in-50">
                     <div className="flex items-center justify-between text-xs text-[#535C56]">
@@ -682,7 +778,7 @@ export default function BookingModal({
                   </div>
                 )}
 
-                {/* TAB 2: CREDIT / DEBIT CARDS */}
+                {/* TAB 3: CREDIT / DEBIT CARDS */}
                 {paymentMethod === 'card' && (
                   <div className="p-4 rounded-2xl bg-white border border-[#EAE5DE] space-y-3 animate-in fade-in-50">
                     <div className="flex items-center justify-between text-xs text-[#535C56]">
@@ -730,7 +826,7 @@ export default function BookingModal({
                   </div>
                 )}
 
-                {/* TAB 3: NET BANKING */}
+                {/* TAB 4: NET BANKING */}
                 {paymentMethod === 'netbanking' && (
                   <div className="p-4 rounded-2xl bg-white border border-[#EAE5DE] space-y-3 animate-in fade-in-50">
                     <label className="block text-[11px] font-semibold text-[#19382C]">
@@ -750,19 +846,6 @@ export default function BookingModal({
                     </select>
                     <p className="text-[11px] text-[#7D9D8B]">
                       You will be securely redirected to your bank’s 2-Factor Authentication portal.
-                    </p>
-                  </div>
-                )}
-
-                {/* TAB 4: INSTANT SANDBOX SIMULATION */}
-                {paymentMethod === 'sandbox' && (
-                  <div className="p-4 rounded-2xl bg-[#E8EFEA] border border-[#D5DDD8] space-y-2 animate-in fade-in-50">
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#19382C]">
-                      <Sparkles className="w-4 h-4 text-[#244A3C]" />
-                      <span>Developer & Evaluator Test Checkout</span>
-                    </div>
-                    <p className="text-xs text-[#535C56] leading-relaxed">
-                      Simulate full payment gateway approval without real monetary deduction. Generates authentic Razorpay test tokens and an auditable GST PDF invoice.
                     </p>
                   </div>
                 )}

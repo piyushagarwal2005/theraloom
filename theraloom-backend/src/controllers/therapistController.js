@@ -32,7 +32,7 @@ exports.getPublicProfile = async (req, res, next) => {
 exports.getPublicTherapists = async (req, res, next) => {
   try {
     const therapists = await Therapist.find({ isActive: true })
-      .select('name slug title qualifications specializations languages consultationFee profileImage location experienceYears')
+      .select('name slug title qualifications specializations languages consultationFee profileImage location experienceYears services')
       .sort({ createdAt: -1 });
 
     res.status(200).json({

@@ -21,9 +21,16 @@ exports.getAvailableSlots = async (req, res, next) => {
     }
 
     let therapist = null;
+    const mongoose = require('mongoose');
     if (therapistId) {
-      therapist = await Therapist.findById(therapistId);
-    } else if (slug) {
+      if (mongoose.Types.ObjectId.isValid(therapistId)) {
+        therapist = await Therapist.findById(therapistId);
+      }
+      if (!therapist) {
+        therapist = await Therapist.findOne({ slug: String(therapistId).toLowerCase(), isActive: true });
+      }
+    }
+    if (!therapist && slug) {
       therapist = await Therapist.findOne({ slug: slug.toLowerCase(), isActive: true });
     }
 
@@ -92,9 +99,16 @@ exports.bookSession = async (req, res, next) => {
     }
 
     let therapist = null;
+    const mongoose = require('mongoose');
     if (therapistId) {
-      therapist = await Therapist.findById(therapistId);
-    } else if (slug) {
+      if (mongoose.Types.ObjectId.isValid(therapistId)) {
+        therapist = await Therapist.findById(therapistId);
+      }
+      if (!therapist) {
+        therapist = await Therapist.findOne({ slug: String(therapistId).toLowerCase(), isActive: true });
+      }
+    }
+    if (!therapist && slug) {
       therapist = await Therapist.findOne({ slug: slug.toLowerCase(), isActive: true });
     }
 

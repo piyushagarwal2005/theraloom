@@ -31,7 +31,26 @@ function formatTimeDisplay(date) {
  * Computes available slots for a given therapist and date
  */
 const getAvailableSlots = async (therapistId, dateStr, clientTz = 'Asia/Kolkata') => {
-  const availability = await Availability.findOne({ therapistId });
+  let availability = await Availability.findOne({ therapistId });
+  if (!availability) {
+    try {
+      availability = await Availability.create({
+        therapistId,
+        weeklySchedule: [
+          { dayOfWeek: 1, isAvailable: true, timeSlots: [{ startTime: '09:00', endTime: '13:00' }, { startTime: '14:00', endTime: '19:00' }] },
+          { dayOfWeek: 2, isAvailable: true, timeSlots: [{ startTime: '09:00', endTime: '13:00' }, { startTime: '14:00', endTime: '19:00' }] },
+          { dayOfWeek: 3, isAvailable: true, timeSlots: [{ startTime: '09:00', endTime: '13:00' }, { startTime: '14:00', endTime: '19:00' }] },
+          { dayOfWeek: 4, isAvailable: true, timeSlots: [{ startTime: '09:00', endTime: '13:00' }, { startTime: '14:00', endTime: '19:00' }] },
+          { dayOfWeek: 5, isAvailable: true, timeSlots: [{ startTime: '09:00', endTime: '13:00' }, { startTime: '14:00', endTime: '19:00' }] },
+          { dayOfWeek: 6, isAvailable: true, timeSlots: [{ startTime: '10:00', endTime: '17:00' }] },
+          { dayOfWeek: 0, isAvailable: true, timeSlots: [{ startTime: '11:00', endTime: '16:00' }] },
+        ],
+      });
+    } catch (e) {
+      availability = await Availability.findOne({ therapistId });
+    }
+  }
+
   if (!availability) {
     return [];
   }
