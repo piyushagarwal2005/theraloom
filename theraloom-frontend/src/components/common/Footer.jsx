@@ -66,9 +66,24 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-[#FAF8F5]/80">
               <li>
-                <Link to="/#directory" className="hover:text-white transition-colors">
-                  Find Verified Therapists
-                </Link>
+                <a href="/#patterns" className="hover:text-white transition-colors">
+                  Identify Your Pattern
+                </a>
+              </li>
+              <li>
+                <a href="/#directory" className="hover:text-white transition-colors">
+                  Find Verified Clinicians
+                </a>
+              </li>
+              <li>
+                <a href="/#clarity-session" className="hover:text-white transition-colors text-emerald-300 font-semibold">
+                  ₹299 Clarity Session
+                </a>
+              </li>
+              <li>
+                <a href="/#anti-guru" className="hover:text-white transition-colors">
+                  The Clinical Standard (No Bypassing)
+                </a>
               </li>
               <li>
                 <Link to="/portal" className="hover:text-white transition-colors">
@@ -76,13 +91,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/#telehealth" className="hover:text-white transition-colors">
-                  Secure Telehealth Video
-                </Link>
+                <a href="/#faq" className="hover:text-white transition-colors">
+                  Straight Talk FAQs
+                </a>
               </li>
               <li>
                 <Link to="/crisis" className="hover:text-rose-300 transition-colors font-medium text-rose-200">
-                  Emergency Helplines (India)
+                  Emergency Helplines (India 14416)
                 </Link>
               </li>
             </ul>

@@ -61,17 +61,17 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full">
-      {/* Top Crisis & Compliance Ribbon (Standard on Alma/BetterHelp) */}
+      {/* Top Crisis & Compliance Ribbon (unfazed.in / Clinical Standard) */}
       <div className="bg-[#122B21] text-[#E4ECE7] py-1.5 px-4 text-[11px] sm:text-xs text-center flex items-center justify-center gap-2 border-b border-[#19382C]">
         <ShieldCheck className="w-3.5 h-3.5 text-[#7D9D8B] shrink-0" />
         <span className="truncate">
-          100% Confidential Telehealth in India • Emergency Crisis Line:{' '}
+          100% Accredited Clinical Psychologists • No Spiritual Bypassing • ₹299 Intro Clarity Session • Emergency:{' '}
           <Link to="/crisis" className="font-bold text-white underline underline-offset-2 hover:text-[#D3A075]">
             Tele-MANAS 14416
           </Link>{' '}
           (24x7 Toll-Free) •{' '}
           <Link to="/crisis" className="text-[#A9BDA9] underline hover:text-white">
-            View All Crisis Helplines →
+            Crisis Helplines →
           </Link>
         </span>
       </div>
@@ -95,29 +95,39 @@ export default function Navbar() {
                   Theraloom
                 </span>
                 <span className="text-[10px] tracking-widest uppercase font-semibold text-[#7D9D8B] -mt-1 hidden sm:block">
-                  Thoughtfully Connected
+                  Your Pain Has A Pattern. Break It.
                 </span>
               </div>
             </Link>
 
             {/* Center Editorial Links for Guests */}
             {!isAuthenticated && (
-              <div className="hidden lg:flex items-center space-x-7 text-xs font-semibold tracking-wide text-[#535C56]">
+              <div className="hidden lg:flex items-center space-x-6 text-xs font-semibold tracking-wide text-[#535C56]">
+                <a
+                  href="/#patterns"
+                  className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#7D9D8B]" />
+                  <span>Break Your Pattern</span>
+                </a>
                 <a
                   href="/#directory"
                   className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5"
                 >
                   <Search className="w-3.5 h-3.5 text-[#7D9D8B]" />
-                  <span>Find a Therapist</span>
+                  <span>Our Therapists</span>
+                </a>
+                <a href="/#anti-guru" className="hover:text-[#19382C] transition-colors py-1">
+                  The Clinical Standard
                 </a>
                 <a href="/#how-it-works" className="hover:text-[#19382C] transition-colors py-1">
                   How Care Works
                 </a>
-                <a href="/#specialties" className="hover:text-[#19382C] transition-colors py-1">
-                  Clinical Specialties
-                </a>
-                <a href="/#pricing" className="hover:text-[#19382C] transition-colors py-1">
-                  Tiers & Pricing
+                <a
+                  href="/#clarity-session"
+                  className="text-emerald-800 bg-[#E8EFEA] hover:bg-[#d8e6dc] px-3 py-1 rounded-full font-bold transition-colors"
+                >
+                  ₹299 Clarity Session
                 </a>
                 <Link
                   to="/portal"
@@ -393,11 +403,25 @@ export default function Navbar() {
             {!isAuthenticated ? (
               <div className="space-y-2 text-sm font-semibold text-[#535C56]">
                 <a
+                  href="#patterns"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5] text-[#19382C] font-bold"
+                >
+                  Break Your Pattern
+                </a>
+                <a
                   href="#directory"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5] text-[#19382C]"
+                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5]"
                 >
-                  Find a Licensed Therapist
+                  Our Accredited Therapists
+                </a>
+                <a
+                  href="#anti-guru"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5]"
+                >
+                  The Clinical Standard (No Bypassing)
                 </a>
                 <a
                   href="#how-it-works"
@@ -407,11 +431,11 @@ export default function Navbar() {
                   How Care Works
                 </a>
                 <a
-                  href="#specialties"
+                  href="#clarity-session"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5]"
+                  className="block px-3 py-2 rounded-xl bg-[#E8EFEA] text-[#19382C] font-bold"
                 >
-                  Clinical Specialties
+                  ₹299 Clarity Session
                 </a>
                 <a
                   href="#pricing"
@@ -423,7 +447,7 @@ export default function Navbar() {
                 <Link
                   to="/portal"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl bg-[#E8EFEA] text-[#19382C]"
+                  className="block px-3 py-2 rounded-xl border border-[#D5DDD8] text-[#19382C]"
                 >
                   Client Portal
                 </Link>

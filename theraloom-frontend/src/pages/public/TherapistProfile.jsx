@@ -47,10 +47,19 @@ export default function TherapistProfile() {
         ]);
 
         if (profRes.data?.success) {
-          setTherapist(profRes.data.therapist);
-          if (profRes.data.therapist.services?.length > 0) {
-            setSelectedService(profRes.data.therapist.services[0]);
-          }
+          const tData = profRes.data.therapist;
+          const claritySession = {
+            _id: 'default_clarity_299',
+            title: 'Introductory Clarity Session (Pattern Break)',
+            description: '20-min focused diagnostic fit check. Unpack your core friction point and evaluate clinical alignment.',
+            durationMinutes: 20,
+            price: 299,
+          };
+          const hasClarity = (tData.services || []).some(s => s.price === 299 || s.title?.toLowerCase().includes('clarity'));
+          const formattedServices = hasClarity ? tData.services : [claritySession, ...(tData.services || [])];
+          tData.services = formattedServices;
+          setTherapist(tData);
+          setSelectedService(formattedServices[0]);
         }
 
         if (pkgRes.data?.success) {
@@ -137,7 +146,13 @@ export default function TherapistProfile() {
                   </h1>
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#E8EFEA] text-[#19382C] px-3 py-1 rounded-full border border-[#D5DDD8]">
                     <BadgeCheck className="w-4 h-4 text-[#244A3C]" />
-                    <span>Verified Practitioner</span>
+                    <span>RCI Accredited Clinician</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-[#FAF8F5] text-[#535C56] px-2.5 py-0.5 rounded-full border border-[#EAE5DE]">
+                    Caseload Capped (Max 20/wk)
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    No Spiritual Bypassing
                   </span>
                 </div>
 
@@ -156,7 +171,11 @@ export default function TherapistProfile() {
                   </span>
                   <span className="flex items-center gap-1.5">
                     <Award className="w-3.5 h-3.5 text-[#7D9D8B]" />
-                    <span>{therapist.experienceYears || 5}+ Years Clinical Experience</span>
+                    <span>{therapist.experienceYears || 5}+ Years Clinical Practice</span>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-emerald-800 font-semibold bg-[#E8EFEA] px-2 py-0.5 rounded-md">
+                    <Sparkles className="w-3.5 h-3.5 text-[#5F7F6E]" />
+                    <span>Intro Clarity Session from ₹299</span>
                   </span>
                 </div>
               </div>

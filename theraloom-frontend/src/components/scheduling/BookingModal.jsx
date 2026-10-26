@@ -71,32 +71,45 @@ export default function BookingModal({
     if (!therapist) return;
 
     const baseFee = therapist.consultationFee || 1800;
-    const availableServices =
-      therapist.services && therapist.services.length > 0
-        ? therapist.services
-        : [
-            {
-              _id: 'default_individual',
-              title: 'Individual Psychotherapy',
-              description: 'One-on-one virtual psychological counselling for anxiety, stress, or emotional regulation.',
-              durationMinutes: 50,
-              price: baseFee,
-            },
-            {
-              _id: 'default_cbt',
-              title: 'Cognitive Behavioural Therapy (CBT)',
-              description: 'Structured evidence-based therapy targeting negative thought patterns and emotional distress.',
-              durationMinutes: 50,
-              price: baseFee,
-            },
-            {
-              _id: 'default_couples',
-              title: 'Couples & Relationship Counselling',
-              description: 'Collaborative partnership counselling for communication, conflict resolution, and trust.',
-              durationMinutes: 60,
-              price: Math.round(baseFee * 1.3),
-            },
-          ];
+    const claritySession = {
+      _id: 'default_clarity_299',
+      title: 'Introductory Clarity Session (Pattern Break)',
+      description: '20-min focused diagnostic fit check. Unpack your core friction point and evaluate clinical alignment.',
+      durationMinutes: 20,
+      price: 299,
+    };
+
+    let availableServices = [];
+    if (therapist.services && therapist.services.length > 0) {
+      // If therapist already has a clarity session, use it; otherwise prepend the ₹299 clarity option
+      const hasClarity = therapist.services.some(s => s.price === 299 || s.title?.toLowerCase().includes('clarity'));
+      availableServices = hasClarity ? therapist.services : [claritySession, ...therapist.services];
+    } else {
+      availableServices = [
+        claritySession,
+        {
+          _id: 'default_individual',
+          title: 'Individual Psychotherapy',
+          description: 'One-on-one virtual psychological counselling for anxiety, stress, or emotional regulation.',
+          durationMinutes: 50,
+          price: baseFee,
+        },
+        {
+          _id: 'default_cbt',
+          title: 'Cognitive Behavioural Therapy (CBT)',
+          description: 'Structured evidence-based therapy targeting negative thought patterns and emotional distress.',
+          durationMinutes: 50,
+          price: baseFee,
+        },
+        {
+          _id: 'default_couples',
+          title: 'Couples & Relationship Counselling',
+          description: 'Collaborative partnership counselling for communication, conflict resolution, and trust.',
+          durationMinutes: 60,
+          price: Math.round(baseFee * 1.3),
+        },
+      ];
+    }
 
     setServices(availableServices);
 
