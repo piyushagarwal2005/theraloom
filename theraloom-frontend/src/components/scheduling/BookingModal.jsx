@@ -169,27 +169,56 @@ export default function BookingModal({ therapist, selectedService: initialServic
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       <div className="relative bg-[#FAF8F5] rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-[#EAE5DE] animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#EAE5DE] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#19382C] flex items-center justify-center text-white">
-              <CalendarIcon className="w-5 h-5 text-[#A9BDA9]" />
+        {/* Header & Step Tracker */}
+        <div className="pb-4 border-b border-[#EAE5DE] shrink-0 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#19382C] flex items-center justify-center text-white shadow-xs">
+                <CalendarIcon className="w-5 h-5 text-[#A9BDA9]" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-[#19382C]">
+                  Book with {therapist.name}
+                </h3>
+                <p className="text-[11px] text-[#7D9D8B] font-medium">
+                  {therapist.title} • Telehealth India
+                </p>
+              </div>
             </div>
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#7D9D8B]">
-                {step < 5 ? `Step ${step} of 4` : 'Confirmed'}
-              </span>
-              <h3 className="text-base sm:text-lg font-bold text-[#19382C]">
-                Book with {therapist.name}
-              </h3>
-            </div>
+            <button
+              onClick={resetAndClose}
+              className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={resetAndClose}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+
+          {/* Stepper Progress Bar */}
+          {step < 5 && (
+            <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
+              <div
+                className={`py-1 px-2 rounded-lg text-center font-semibold transition-colors ${
+                  step >= 1 ? 'bg-[#19382C] text-white' : 'bg-[#FAF8F5] text-gray-400'
+                }`}
+              >
+                1. Service Format
+              </div>
+              <div
+                className={`py-1 px-2 rounded-lg text-center font-semibold transition-colors ${
+                  step >= 2 ? 'bg-[#19382C] text-white' : 'bg-[#FAF8F5] text-gray-400'
+                }`}
+              >
+                2. Date & Slot
+              </div>
+              <div
+                className={`py-1 px-2 rounded-lg text-center font-semibold transition-colors ${
+                  step >= 3 ? 'bg-[#19382C] text-white' : 'bg-[#FAF8F5] text-gray-400'
+                }`}
+              >
+                3. Intake & Pay
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Modal Body */}

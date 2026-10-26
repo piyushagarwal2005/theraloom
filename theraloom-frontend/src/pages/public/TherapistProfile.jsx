@@ -14,6 +14,12 @@ import {
   Check,
   ChevronRight,
   AlertCircle,
+  BadgeCheck,
+  HeartHandshake,
+  Sparkles,
+  BookOpen,
+  HelpCircle,
+  CreditCard,
 } from 'lucide-react';
 import Avatar from '../../components/common/Avatar';
 import BookingModal from '../../components/scheduling/BookingModal';
@@ -76,7 +82,7 @@ export default function TherapistProfile() {
   if (error || !therapist) {
     return (
       <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center py-20 px-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-[#EAE5DE] text-center space-y-4 shadow-xs">
+        <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-[#EAE5DE] text-center space-y-4 shadow-sanctuary">
           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 mx-auto flex items-center justify-center">
             <AlertCircle className="w-6 h-6" />
           </div>
@@ -98,62 +104,69 @@ export default function TherapistProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] py-10 sm:py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* Top Header Card */}
-        <div className="bg-white rounded-3xl border border-[#EAE5DE] p-6 sm:p-10 shadow-xs relative overflow-hidden">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <div className="min-h-screen bg-[#FAF8F5] py-8 sm:py-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* TOP PROFILE HERO CARD (Alma / Two Chairs Concierge) */}
+        <div className="bg-white rounded-3xl border border-[#EAE5DE] p-6 sm:p-10 shadow-sanctuary relative overflow-hidden">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            {/* Left: Avatar & Bio Headline */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-              <Avatar
-                src={therapist.profileImage}
-                name={therapist.name}
-                size="2xl"
-                className="border-4 border-[#FAF8F5] shadow-md shrink-0"
-              />
-              <div className="space-y-1.5">
+              <div className="relative shrink-0">
+                <Avatar
+                  src={therapist.profileImage}
+                  name={therapist.name}
+                  size="2xl"
+                  className="border-4 border-[#FAF8F5] shadow-md shrink-0"
+                />
+                <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white" />
+              </div>
+
+              <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#19382C]">
+                  <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#19382C]">
                     {therapist.name}
                   </h1>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-[#E8EFEA] text-[#19382C] px-2.5 py-0.5 rounded-full border border-[#D5DDD8]">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#244A3C]" />
-                    Verified Practitioner
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#E8EFEA] text-[#19382C] px-3 py-1 rounded-full border border-[#D5DDD8]">
+                    <BadgeCheck className="w-4 h-4 text-[#244A3C]" />
+                    <span>Verified Practitioner</span>
                   </span>
                 </div>
 
-                <p className="text-sm font-medium text-[#7D9D8B]">{therapist.title}</p>
-                <p className="text-xs text-[#535C56]">{therapist.qualifications}</p>
+                <p className="text-sm font-bold text-[#7D9D8B]">{therapist.title}</p>
+                <p className="text-xs text-[#535C56] font-medium">{therapist.qualifications}</p>
 
+                {/* Badges Bar */}
                 <div className="flex flex-wrap items-center gap-4 text-xs text-[#535C56] pt-1">
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-[#7D9D8B]" />
-                    {therapist.location || 'Available Online (All India)'}
+                    <span>{therapist.location || 'Online across India'}</span>
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5">
                     <Globe className="w-3.5 h-3.5 text-[#7D9D8B]" />
-                    {therapist.languages?.join(', ') || 'English, Hindi'}
+                    <span>{therapist.languages?.join(', ') || 'English, Hindi'}</span>
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5">
                     <Award className="w-3.5 h-3.5 text-[#7D9D8B]" />
-                    {therapist.experienceYears || 5}+ Years Clinical Experience
+                    <span>{therapist.experienceYears || 5}+ Years Clinical Experience</span>
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Right Action / Share */}
-            <div className="flex flex-col sm:flex-row md:flex-col items-stretch md:items-end gap-3 w-full md:w-auto shrink-0">
+            {/* Right: Quick Action Buttons */}
+            <div className="flex flex-col sm:flex-row lg:flex-col items-stretch lg:items-end gap-3 w-full lg:w-auto shrink-0">
               <button
                 onClick={() => setBookingModalOpen(true)}
-                className="px-6 py-3 rounded-xl bg-[#19382C] text-white text-sm font-semibold hover:bg-[#244E3E] transition-all shadow-sm flex items-center justify-center gap-2"
+                className="px-6 py-3.5 rounded-2xl bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E] transition-all shadow-md flex items-center justify-center gap-2 group"
               >
                 <Calendar className="w-4 h-4" />
-                <span>Book Appointment</span>
+                <span>Book Telehealth Session</span>
+                <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </button>
 
               <button
                 onClick={handleCopyLink}
-                className="px-4 py-2 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] text-xs font-medium text-[#535C56] hover:text-[#19382C] hover:bg-[#F4EFEB] transition-colors flex items-center justify-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] text-xs font-semibold text-[#535C56] hover:text-[#19382C] hover:bg-[#F4EFEB] transition-colors flex items-center justify-center gap-1.5"
               >
                 {copied ? (
                   <>
@@ -163,7 +176,7 @@ export default function TherapistProfile() {
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5" />
-                    <span>Share Profile Link</span>
+                    <span>Share Practice Link</span>
                   </>
                 )}
               </button>
@@ -171,30 +184,37 @@ export default function TherapistProfile() {
           </div>
         </div>
 
-        {/* Content Grid: Bio & Services */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Column: Biography & Approach */}
+        {/* MAIN BODY: 2-COLUMN SANCTUARY LAYOUT */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column (8 cols): Therapeutic Approach & Philosophy */}
           <div className="lg:col-span-7 space-y-6">
-            {/* About */}
-            <div className="bg-white rounded-3xl border border-[#EAE5DE] p-6 sm:p-8 space-y-4 shadow-xs">
-              <h2 className="text-base font-bold text-[#19382C] uppercase tracking-wider text-xs">
-                About the Practitioner
+            {/* About & Clinical Philosophy */}
+            <div className="bg-white rounded-3xl border border-[#EAE5DE] p-7 sm:p-8 space-y-4 shadow-sanctuary">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#7D9D8B]">
+                Therapeutic Philosophy
+              </span>
+              <h2 className="font-serif text-2xl font-bold text-[#19382C]">
+                Compassionate, Evidence-Grounded Care
               </h2>
-              <div className="text-xs sm:text-sm text-[#535C56] leading-relaxed whitespace-pre-line">
-                {therapist.bio || 'Compassionate and evidence-based psychotherapy tailored to individual life transitions and mental health challenges.'}
+              <div className="text-xs sm:text-sm text-[#535C56] leading-relaxed whitespace-pre-line space-y-2">
+                {therapist.bio ||
+                  'Compassionate and evidence-based psychotherapy tailored to individual life transitions and mental health challenges.'}
               </div>
             </div>
 
             {/* Specializations & Modalities */}
-            <div className="bg-white rounded-3xl border border-[#EAE5DE] p-6 sm:p-8 space-y-4 shadow-xs">
-              <h2 className="text-base font-bold text-[#19382C] uppercase tracking-wider text-xs">
-                Clinical Focus & Areas of Practice
+            <div className="bg-white rounded-3xl border border-[#EAE5DE] p-7 sm:p-8 space-y-4 shadow-sanctuary">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#7D9D8B]">
+                Clinical Focus
+              </span>
+              <h2 className="font-serif text-2xl font-bold text-[#19382C]">
+                Areas of Expertise & Presenting Concerns
               </h2>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 pt-1">
                 {(therapist.specializations || ['Anxiety', 'Depression', 'Stress Management']).map((item) => (
                   <span
                     key={item}
-                    className="px-3 py-1.5 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] text-xs font-medium text-[#19382C]"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] text-xs font-semibold text-[#19382C] shadow-2xs"
                   >
                     {item}
                   </span>
@@ -202,91 +222,119 @@ export default function TherapistProfile() {
               </div>
             </div>
 
-            {/* Confidentiality & Legal Notice under MHCA 2017 */}
-            <div className="bg-[#E8EFEA] rounded-2xl border border-[#D5DDD8] p-5 space-y-2 text-xs text-[#19382C]">
-              <div className="flex items-center gap-2 font-bold">
-                <ShieldCheck className="w-4 h-4 text-[#244A3C]" />
-                <span>Ethical Confidentiality & Telehealth Standards</span>
+            {/* What to Expect in Your First Session */}
+            <div className="bg-white rounded-3xl border border-[#EAE5DE] p-7 sm:p-8 space-y-4 shadow-sanctuary">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#7D9D8B]">
+                Session Guidance
+              </span>
+              <h2 className="font-serif text-2xl font-bold text-[#19382C]">
+                What to Expect in Session One
+              </h2>
+              <div className="space-y-3 text-xs text-[#535C56] leading-relaxed">
+                <p>
+                  Your initial session is a collaborative conversation. We will gently explore what brings you into care, your current emotional landscape, and co-create meaningful goals at your own pace.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#EAE5DE] space-y-1">
+                    <span className="font-bold text-[#19382C]">No Pressure to Share Everything</span>
+                    <p className="text-[11px] text-[#535C56]">You set the pace. You are in full control of what is discussed.</p>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#EAE5DE] space-y-1">
+                    <span className="font-bold text-[#19382C]">Strict Clinical Confidentiality</span>
+                    <p className="text-[11px] text-[#535C56]">Protected under professional ethics and the Indian Mental Healthcare Act 2017.</p>
+                  </div>
+                </div>
               </div>
-              <p className="text-[11px] text-[#535C56] leading-relaxed">
-                Therapy sessions are strictly confidential in accordance with the Mental Healthcare Act 2017 and clinical psychology ethics. Clinical private documentation is encrypted and never shared without patient consent.
+            </div>
+
+            {/* Legal & MHCA 2017 Compliance Card */}
+            <div className="bg-[#E8EFEA] rounded-3xl border border-[#D5DDD8] p-6 space-y-2 text-xs text-[#19382C]">
+              <div className="flex items-center gap-2 font-bold text-sm">
+                <ShieldCheck className="w-5 h-5 text-[#244A3C]" />
+                <span>Ethical & Clinical Privacy Guarantee</span>
+              </div>
+              <p className="text-[#535C56] leading-relaxed text-[11px]">
+                In full accordance with the Mental Healthcare Act 2017, all communications and clinical documentation remain confidential. Private session notes are never accessible to external parties, employers, or non-authorized endpoints.
               </p>
             </div>
           </div>
 
-          {/* Right Column: Available Services & Booking Cards */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="bg-white rounded-3xl border border-[#EAE5DE] p-6 sm:p-8 space-y-5 shadow-xs">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-[#19382C]">
-                  Consultation Services
-                </h2>
-                <span className="text-[11px] text-[#7D9D8B] font-semibold">
-                  Select a session format
+          {/* Right Column (5 cols): Sticky Consultation Booking Concierge */}
+          <div className="lg:col-span-5 sticky top-28 space-y-5">
+            <div className="bg-white rounded-3xl border border-[#EAE5DE] p-6 sm:p-7 shadow-sanctuary space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-[#EAE5DE]">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D9D8B]">
+                    Standard Consultation
+                  </span>
+                  <div className="flex items-baseline gap-1 mt-0.5">
+                    <span className="text-2xl font-bold text-[#19382C]">
+                      ₹{therapist.consultationFee || 1800}
+                    </span>
+                    <span className="text-xs text-[#535C56]">/ 50-min session</span>
+                  </div>
+                </div>
+                <span className="text-[11px] font-semibold text-emerald-800 bg-[#E8EFEA] px-2.5 py-1 rounded-full border border-[#D5DDD8]">
+                  Available this week
                 </span>
               </div>
 
+              {/* Service Formats */}
               <div className="space-y-3">
+                <label className="block text-xs font-bold text-[#19382C] uppercase tracking-wider text-[11px]">
+                  Select Consultation Format
+                </label>
                 {(therapist.services || [
                   {
                     title: 'Individual Psychotherapy',
-                    description: 'One-on-one telehealth session for anxiety, depression, or personal growth.',
+                    description: 'One-on-one telehealth session for anxiety, depression, or emotional regulation.',
                     durationMinutes: 50,
                     price: therapist.consultationFee || 1800,
                   },
-                ]).map((svc) => (
-                  <div
-                    key={svc._id || svc.title}
-                    className="p-4 rounded-2xl border border-[#EAE5DE] bg-[#FAF8F5] hover:border-[#7D9D8B] hover:bg-white transition-all space-y-2 group"
-                  >
-                    <div className="flex items-start justify-between">
+                ]).map((svc) => {
+                  const isSelected = selectedService?.title === svc.title;
+                  return (
+                    <div
+                      key={svc._id || svc.title}
+                      onClick={() => setSelectedService(svc)}
+                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                        isSelected
+                          ? 'border-[#19382C] bg-[#E8EFEA]/70 shadow-xs ring-1 ring-[#19382C]'
+                          : 'border-[#EAE5DE] bg-[#FAF8F5] hover:border-[#7D9D8B]'
+                      }`}
+                    >
                       <div>
-                        <h3 className="text-sm font-bold text-[#19382C] group-hover:text-[#244E3E]">
-                          {svc.title}
-                        </h3>
-                        <p className="text-xs text-[#535C56] mt-0.5 line-clamp-2">
-                          {svc.description}
-                        </p>
+                        <h4 className="text-xs font-bold text-[#19382C]">{svc.title}</h4>
+                        <div className="flex items-center gap-2 text-[10px] text-[#7D9D8B] mt-0.5">
+                          <span className="flex items-center gap-0.5">
+                            <Clock className="w-3 h-3" />
+                            {svc.durationMinutes}m
+                          </span>
+                          <span>•</span>
+                          <span className="flex items-center gap-0.5">
+                            <Video className="w-3 h-3" />
+                            Telehealth Video
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right shrink-0 ml-3">
-                        <span className="text-sm font-bold text-[#19382C]">₹{svc.price}</span>
-                        <p className="text-[10px] text-[#7D9D8B]">INR</p>
-                      </div>
+                      <span className="text-xs font-bold text-[#19382C]">₹{svc.price}</span>
                     </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-[#EAE5DE] text-xs">
-                      <div className="flex items-center gap-3 text-[#7D9D8B]">
-                        <span className="flex items-center gap-1 text-[11px]">
-                          <Clock className="w-3.5 h-3.5" />
-                          {svc.durationMinutes} mins
-                        </span>
-                        <span className="flex items-center gap-1 text-[11px]">
-                          <Video className="w-3.5 h-3.5" />
-                          Telehealth
-                        </span>
-                      </div>
-
-                      <button
-                        onClick={() => handleBookService(svc)}
-                        className="px-3 py-1.5 rounded-lg bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E] transition-colors flex items-center gap-1"
-                      >
-                        <span>Select</span>
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
-              {/* Consultation Fee Summary */}
-              <div className="pt-2 text-center text-xs text-[#535C56]">
-                Questions before booking?{' '}
-                <a
-                  href={`mailto:${therapist.email}`}
-                  className="text-[#19382C] font-semibold underline hover:text-[#244E3E]"
-                >
-                  Contact Practitioner
-                </a>
+              {/* Action Button */}
+              <button
+                onClick={() => setBookingModalOpen(true)}
+                className="w-full py-3.5 rounded-2xl bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E] transition-all flex items-center justify-center gap-2 shadow-md"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Select Date & Time Slot</span>
+              </button>
+
+              <div className="pt-2 text-center text-[11px] text-[#7D9D8B] space-y-1">
+                <p>Instant confirmation • Free rescheduling up to 24h prior</p>
+                <p>Tax invoice with GST receipt generated automatically</p>
               </div>
             </div>
           </div>

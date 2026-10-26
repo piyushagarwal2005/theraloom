@@ -160,7 +160,7 @@ export default function ClientPortal() {
     <div className="min-h-screen bg-[#FAF8F5] py-8 sm:py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* Header Bar */}
-        <div className="bg-white rounded-3xl border border-[#EAE5DE] p-6 sm:p-8 shadow-xs">
+        <div className="bg-white rounded-3xl border border-[#EAE5DE] p-6 sm:p-8 shadow-sanctuary">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-semibold uppercase tracking-wider text-[#7D9D8B]">
