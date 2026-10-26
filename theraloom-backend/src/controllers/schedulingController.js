@@ -143,22 +143,31 @@ exports.bookSession = async (req, res, next) => {
 
       // 3. Persist Payment record for client portal & invoices
       const invoiceNumber = `TL-INV-${Date.now().toString().slice(-6)}`;
-      await Payment.create({
+      const paymentMethod = req.body.paymentMethod || 'upi';
+      const createdPayment = await Payment.create({
         therapistId: therapist._id,
         clientId: client._id,
         clientName,
         clientEmail: clientEmail.toLowerCase(),
         sessionId: session._id,
         amount: sessionPrice,
+        amountInPaise: Math.round(sessionPrice * 100),
         currency: 'INR',
         status: 'captured',
-        paymentMethod: 'upi',
+        paymentMethod,
         invoiceNumber,
         taxAmount: Math.round(sessionPrice * 0.18),
         platformFee: Math.round(sessionPrice * 0.02),
         netAmount: Math.round(sessionPrice * 0.98),
         razorpayOrderId: razorpayOrderId || `order_${Date.now()}`,
         razorpayPaymentId: razorpayPaymentId || `pay_${Date.now()}`,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Your session has been successfully booked!',
+        session,
+        payment: createdPayment,
       });
     }
 

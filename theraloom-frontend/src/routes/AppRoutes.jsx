@@ -2,6 +2,10 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Home from '../pages/public/Home';
 import TherapistProfile from '../pages/public/TherapistProfile';
+import TermsOfPractice from '../pages/public/TermsOfPractice';
+import CrisisHelplines from '../pages/public/CrisisHelplines';
+import PrivacyPolicy from '../pages/public/PrivacyPolicy';
+import SecurityCompliance from '../pages/public/SecurityCompliance';
 import ClientPortal from '../pages/client/ClientPortal';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
@@ -24,6 +28,10 @@ export default function AppRoutes() {
       <Route path="/portal" element={<ClientPortal />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/terms" element={<TermsOfPractice />} />
+      <Route path="/crisis" element={<CrisisHelplines />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/security" element={<SecurityCompliance />} />
 
       {/* Protected Therapist Workspace */}
       <Route

@@ -66,7 +66,13 @@ export default function Navbar() {
         <ShieldCheck className="w-3.5 h-3.5 text-[#7D9D8B] shrink-0" />
         <span className="truncate">
           100% Confidential Telehealth in India • Emergency Crisis Line:{' '}
-          <span className="font-bold text-white underline underline-offset-2">Tele-MANAS 14416</span> (24x7 Toll-Free)
+          <Link to="/crisis" className="font-bold text-white underline underline-offset-2 hover:text-[#D3A075]">
+            Tele-MANAS 14416
+          </Link>{' '}
+          (24x7 Toll-Free) •{' '}
+          <Link to="/crisis" className="text-[#A9BDA9] underline hover:text-white">
+            View All Crisis Helplines →
+          </Link>
         </span>
       </div>
 
@@ -96,21 +102,21 @@ export default function Navbar() {
 
             {/* Center Editorial Links for Guests */}
             {!isAuthenticated && (
-              <div className="hidden lg:flex items-center space-x-8 text-xs font-semibold tracking-wide text-[#535C56]">
+              <div className="hidden lg:flex items-center space-x-7 text-xs font-semibold tracking-wide text-[#535C56]">
                 <a
-                  href="#directory"
+                  href="/#directory"
                   className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5"
                 >
                   <Search className="w-3.5 h-3.5 text-[#7D9D8B]" />
                   <span>Find a Therapist</span>
                 </a>
-                <a href="#how-it-works" className="hover:text-[#19382C] transition-colors py-1">
+                <a href="/#how-it-works" className="hover:text-[#19382C] transition-colors py-1">
                   How Care Works
                 </a>
-                <a href="#specialties" className="hover:text-[#19382C] transition-colors py-1">
+                <a href="/#specialties" className="hover:text-[#19382C] transition-colors py-1">
                   Clinical Specialties
                 </a>
-                <a href="#pricing" className="hover:text-[#19382C] transition-colors py-1">
+                <a href="/#pricing" className="hover:text-[#19382C] transition-colors py-1">
                   Tiers & Pricing
                 </a>
                 <Link
@@ -118,6 +124,13 @@ export default function Navbar() {
                   className="text-[#19382C] hover:bg-[#E8EFEA] px-3 py-1.5 rounded-full border border-[#D5DDD8] transition-colors"
                 >
                   Client Portal
+                </Link>
+                <Link
+                  to="/crisis"
+                  className="text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-full border border-rose-200 transition-colors flex items-center gap-1.5"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                  <span>Crisis Helpline</span>
                 </Link>
               </div>
             )}
@@ -414,6 +427,18 @@ export default function Navbar() {
                 >
                   Client Portal
                 </Link>
+                <Link
+                  to="/crisis"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-xl bg-rose-50 text-rose-800 font-bold border border-rose-200"
+                >
+                  24x7 Emergency Helplines (14416)
+                </Link>
+                <div className="pt-2 border-t border-[#EAE5DE] flex flex-wrap gap-3 text-xs text-[#7D9D8B] px-3">
+                  <Link to="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#19382C]">Terms</Link>
+                  <Link to="/privacy" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#19382C]">Privacy</Link>
+                  <Link to="/security" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#19382C]">Security</Link>
+                </div>
               </div>
             ) : (
               <div className="space-y-1.5 text-sm font-semibold text-[#535C56]">

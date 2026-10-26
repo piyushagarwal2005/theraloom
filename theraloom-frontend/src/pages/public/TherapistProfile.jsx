@@ -28,6 +28,7 @@ import api from '../../api/axiosInstance';
 export default function TherapistProfile() {
   const { slug } = useParams();
   const [therapist, setTherapist] = useState(null);
+  const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -40,12 +41,20 @@ export default function TherapistProfile() {
       setLoading(true);
       setError('');
       try {
-        const res = await api.get(`/therapists/public/${slug}`);
-        if (res.data?.success) {
-          setTherapist(res.data.therapist);
-          if (res.data.therapist.services?.length > 0) {
-            setSelectedService(res.data.therapist.services[0]);
+        const [profRes, pkgRes] = await Promise.all([
+          api.get(`/therapists/public/${slug}`),
+          api.get(`/payments/packages/${slug}`).catch(() => ({ data: {} })),
+        ]);
+
+        if (profRes.data?.success) {
+          setTherapist(profRes.data.therapist);
+          if (profRes.data.therapist.services?.length > 0) {
+            setSelectedService(profRes.data.therapist.services[0]);
           }
+        }
+
+        if (pkgRes.data?.success) {
+          setPackages(pkgRes.data.packages || []);
         }
       } catch (err) {
         setError('Therapist profile could not be found or has not been published yet.');
@@ -248,7 +257,7 @@ export default function TherapistProfile() {
             </div>
 
             {/* Legal & MHCA 2017 Compliance Card */}
-            <div className="bg-[#E8EFEA] rounded-3xl border border-[#D5DDD8] p-6 space-y-2 text-xs text-[#19382C]">
+            <div className="bg-[#E8EFEA] rounded-3xl border border-[#D5DDD8] p-6 space-y-3 text-xs text-[#19382C]">
               <div className="flex items-center gap-2 font-bold text-sm">
                 <ShieldCheck className="w-5 h-5 text-[#244A3C]" />
                 <span>Ethical & Clinical Privacy Guarantee</span>
@@ -256,6 +265,24 @@ export default function TherapistProfile() {
               <p className="text-[#535C56] leading-relaxed text-[11px]">
                 In full accordance with the Mental Healthcare Act 2017, all communications and clinical documentation remain confidential. Private session notes are never accessible to external parties, employers, or non-authorized endpoints.
               </p>
+              <div className="pt-1 flex flex-wrap gap-4 text-[11px] font-semibold text-[#19382C]">
+                <Link to="/terms" className="underline hover:text-[#244E3E]">Terms of Practice</Link>
+                <Link to="/privacy" className="underline hover:text-[#244E3E]">Privacy Policy</Link>
+                <Link to="/security" className="underline hover:text-[#244E3E]">Security Architecture</Link>
+              </div>
+            </div>
+
+            {/* Emergency Crisis Notice */}
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-semibold block text-amber-950">In acute distress or crisis?</span>
+                <p className="text-[11px] leading-relaxed">
+                  Scheduled therapy is not for emergency crisis response. Call 24x7 Tele-MANAS at{' '}
+                  <a href="tel:14416" className="font-bold underline">14416</a> or view the{' '}
+                  <Link to="/crisis" className="font-bold underline text-amber-950">Emergency Helpline Directory</Link>.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -322,6 +349,53 @@ export default function TherapistProfile() {
                   );
                 })}
               </div>
+
+              {/* Multi-Session Care Packages */}
+              {packages.length > 0 && (
+                <div className="space-y-2.5 pt-3 border-t border-[#EAE5DE]">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-[#19382C] uppercase tracking-wider text-[11px]">
+                      Multi-Session Care Packages
+                    </label>
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
+                      Save up to 20%
+                    </span>
+                  </div>
+                  {packages.map((pkg) => {
+                    const isSelected = selectedService?.title === pkg.title;
+                    return (
+                      <div
+                        key={pkg._id || pkg.title}
+                        onClick={() =>
+                          setSelectedService({
+                            title: pkg.title,
+                            description: pkg.description,
+                            durationMinutes: 50,
+                            price: pkg.price,
+                            isPackage: true,
+                          })
+                        }
+                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                          isSelected
+                            ? 'border-[#19382C] bg-[#E8EFEA]/70 shadow-xs ring-1 ring-[#19382C]'
+                            : 'border-[#EAE5DE] bg-[#FAF8F5] hover:border-[#7D9D8B]'
+                        }`}
+                      >
+                        <div>
+                          <h4 className="text-xs font-bold text-[#19382C]">{pkg.title}</h4>
+                          <p className="text-[10px] text-[#7D9D8B] mt-0.5">
+                            {pkg.sessionCount} sessions • Valid for {pkg.validityDays} days
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-bold text-[#19382C]">₹{pkg.price}</span>
+                          <span className="block text-[9px] text-emerald-700 font-semibold">{pkg.discountPercentage}% off</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Action Button */}
               <button

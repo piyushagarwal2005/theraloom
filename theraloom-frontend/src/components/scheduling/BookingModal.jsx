@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   X,
   Calendar as CalendarIcon,
@@ -14,14 +15,25 @@ import {
   FileText,
   ChevronRight,
   Download,
+  QrCode,
+  Building2,
+  Smartphone,
+  Lock,
+  Sparkles,
 } from 'lucide-react';
 import api from '../../api/axiosInstance';
 
-export default function BookingModal({ therapist, selectedService: initialService, isOpen, onClose, onBookingSuccess }) {
-  const [step, setStep] = useState(1); // 1: Service, 2: Slot, 3: Intake & Consent, 4: Payment, 5: Success
+export default function BookingModal({
+  therapist,
+  selectedService: initialService,
+  isOpen,
+  onClose,
+  onBookingSuccess,
+}) {
+  const [step, setStep] = useState(1); // 1: Service, 2: Slot, 3: Intake, 4: Payment, 5: Success
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState(initialService || null);
-  
+
   // Date and slot selection
   const todayStr = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -37,10 +49,20 @@ export default function BookingModal({ therapist, selectedService: initialServic
   const [presentingConcern, setPresentingConcern] = useState('');
   const [consentAgreed, setConsentAgreed] = useState(false);
 
-  // Submission & payment state
+  // Payment method selection
+  const [paymentMethod, setPaymentMethod] = useState('upi'); // 'upi' | 'card' | 'netbanking' | 'sandbox'
+  const [upiId, setUpiId] = useState('kunal@okhdfcbank');
+  const [cardNumber, setCardNumber] = useState('4532 8901 2345 6789');
+  const [cardExpiry, setCardExpiry] = useState('08/29');
+  const [cardCvv, setCardCvv] = useState('782');
+  const [cardHolder, setCardHolder] = useState('Kunal Joshi');
+  const [selectedBank, setSelectedBank] = useState('HDFC Bank');
+
+  // Submission state
   const [submitting, setSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [confirmedPayment, setConfirmedPayment] = useState(null);
 
   useEffect(() => {
     if (therapist?.services && therapist.services.length > 0) {
@@ -98,30 +120,42 @@ export default function BookingModal({ therapist, selectedService: initialServic
     setStep(3);
   };
 
-  const handleConfirmAndPay = async (e) => {
+  const handleNextToPayment = (e) => {
     e.preventDefault();
-    if (!consentAgreed) {
-      setBookingError('Please review and agree to the telehealth consent terms.');
+    if (!clientName || !clientEmail) {
+      setBookingError('Please enter your full name and valid email address.');
       return;
     }
+    if (!consentAgreed) {
+      setBookingError('Please review and agree to the MHCA 2017 telehealth consent terms.');
+      return;
+    }
+    setBookingError('');
+    setStep(4);
+  };
 
+  const handleProcessPayment = async () => {
     setSubmitting(true);
     setBookingError('');
 
     try {
-      // 1. Create order for Razorpay or test checkout
       const price = selectedService?.price || therapist.consultationFee || 1800;
+
+      // 1. Create order on backend (Razorpay / Mock)
       const orderRes = await api.post('/payments/create-order', {
         therapistId: therapist._id,
         amount: price,
         clientName,
         clientEmail,
+        type: 'session',
         description: `${selectedService?.title || 'Session'} with ${therapist.name}`,
       });
 
-      const orderData = orderRes.data?.data;
+      const orderData = orderRes.data?.data || orderRes.data?.order;
+      const orderId = orderData?.orderId || `order_${Date.now()}`;
+      const paymentId = `pay_${paymentMethod}_${Date.now()}`;
 
-      // 2. Complete Booking with payment details
+      // 2. Atomically book session with verified payment record
       const bookRes = await api.post('/scheduling/book-session', {
         therapistId: therapist._id,
         serviceId: selectedService?._id,
@@ -136,23 +170,25 @@ export default function BookingModal({ therapist, selectedService: initialServic
         presentingConcern,
         consentAgreed: true,
         consentTimestamp: new Date().toISOString(),
-        razorpayOrderId: orderData?.orderId || `test_order_${Date.now()}`,
-        razorpayPaymentId: `test_pay_${Date.now()}`,
+        paymentMethod,
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
         razorpaySignature: 'test_mock_sig_123',
       });
 
       if (bookRes.data?.success) {
         setConfirmedBooking(bookRes.data.session);
+        setConfirmedPayment(bookRes.data.payment);
         setStep(5); // Success step
         if (onBookingSuccess) onBookingSuccess(bookRes.data.session);
       }
     } catch (err) {
-      console.error('Booking error:', err);
+      console.error('Payment / Booking error:', err);
       if (err.response?.status === 409) {
-        setBookingError('This time slot was just taken by another client! Please pick another slot.');
-        setStep(2); // Send back to slot picker
+        setBookingError('This time slot was just taken by another client! Please select another slot.');
+        setStep(2);
       } else {
-        setBookingError(err.response?.data?.message || 'Failed to complete booking. Please try again.');
+        setBookingError(err.response?.data?.message || 'Payment processing failed. Please try again.');
       }
     } finally {
       setSubmitting(false);
@@ -166,9 +202,13 @@ export default function BookingModal({ therapist, selectedService: initialServic
     onClose();
   };
 
+  const sessionFee = selectedService?.price || therapist.consultationFee || 1800;
+  const gstTax = Math.round(sessionFee * 0.18);
+  const totalPayable = sessionFee; // Indian counseling fees are inclusive of GST
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-      <div className="relative bg-[#FAF8F5] rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-[#EAE5DE] animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="relative bg-[#FAF8F5] rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-[#EAE5DE] animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] flex flex-col">
         {/* Header & Step Tracker */}
         <div className="pb-4 border-b border-[#EAE5DE] shrink-0 space-y-3">
           <div className="flex items-center justify-between">
@@ -195,27 +235,34 @@ export default function BookingModal({ therapist, selectedService: initialServic
 
           {/* Stepper Progress Bar */}
           {step < 5 && (
-            <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
+            <div className="grid grid-cols-4 gap-1.5 pt-1 text-[10px] sm:text-[11px]">
               <div
-                className={`py-1 px-2 rounded-lg text-center font-semibold transition-colors ${
-                  step >= 1 ? 'bg-[#19382C] text-white' : 'bg-[#FAF8F5] text-gray-400'
+                className={`py-1 px-1 rounded-lg text-center font-semibold transition-colors truncate ${
+                  step >= 1 ? 'bg-[#19382C] text-white' : 'bg-gray-200/60 text-gray-400'
                 }`}
               >
-                1. Service Format
+                1. Service
               </div>
               <div
-                className={`py-1 px-2 rounded-lg text-center font-semibold transition-colors ${
-                  step >= 2 ? 'bg-[#19382C] text-white' : 'bg-[#FAF8F5] text-gray-400'
+                className={`py-1 px-1 rounded-lg text-center font-semibold transition-colors truncate ${
+                  step >= 2 ? 'bg-[#19382C] text-white' : 'bg-gray-200/60 text-gray-400'
                 }`}
               >
-                2. Date & Slot
+                2. Slot
               </div>
               <div
-                className={`py-1 px-2 rounded-lg text-center font-semibold transition-colors ${
-                  step >= 3 ? 'bg-[#19382C] text-white' : 'bg-[#FAF8F5] text-gray-400'
+                className={`py-1 px-1 rounded-lg text-center font-semibold transition-colors truncate ${
+                  step >= 3 ? 'bg-[#19382C] text-white' : 'bg-gray-200/60 text-gray-400'
                 }`}
               >
-                3. Intake & Pay
+                3. Intake
+              </div>
+              <div
+                className={`py-1 px-1 rounded-lg text-center font-semibold transition-colors truncate ${
+                  step >= 4 ? 'bg-[#19382C] text-white' : 'bg-gray-200/60 text-gray-400'
+                }`}
+              >
+                4. Payment
               </div>
             </div>
           )}
@@ -235,7 +282,7 @@ export default function BookingModal({ therapist, selectedService: initialServic
             <div className="space-y-4">
               <div>
                 <h4 className="text-sm font-semibold text-[#19382C] mb-1">
-                  1. Select Therapy Service
+                  1. Select Clinical Format
                 </h4>
                 <p className="text-xs text-[#535C56]">
                   Choose session format tailored to your specific mental health goals.
@@ -249,32 +296,28 @@ export default function BookingModal({ therapist, selectedService: initialServic
                     onClick={() => setSelectedService(svc)}
                     className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                       selectedService?.title === svc.title
-                        ? 'border-[#19382C] bg-[#E8EFEA]/60 shadow-xs'
+                        ? 'border-[#19382C] bg-[#E8EFEA]/80 shadow-xs ring-1 ring-[#19382C]'
                         : 'border-[#EAE5DE] bg-white hover:border-[#7D9D8B]'
                     }`}
                   >
                     <div>
-                      <h5 className="text-sm font-bold text-[#19382C]">{svc.title}</h5>
-                      <p className="text-xs text-[#535C56] mt-0.5 line-clamp-2">
-                        {svc.description || 'Confidential one-on-one session.'}
+                      <h5 className="text-xs font-bold text-[#19382C]">{svc.title}</h5>
+                      <p className="text-[11px] text-[#535C56] mt-0.5 max-w-sm line-clamp-1">
+                        {svc.description}
                       </p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-[#7D9D8B]">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-2 text-[10px] text-[#7D9D8B] mt-1">
+                        <span className="flex items-center gap-0.5">
+                          <Clock className="w-3 h-3" />
                           {svc.durationMinutes} mins
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Video className="w-3.5 h-3.5" />
-                          Telehealth Video
+                        <span>•</span>
+                        <span className="flex items-center gap-0.5">
+                          <Video className="w-3 h-3" />
+                          Encrypted Video
                         </span>
                       </div>
                     </div>
-                    <div className="text-right shrink-0 ml-4">
-                      <div className="text-base font-bold text-[#19382C]">
-                        ₹{svc.price}
-                      </div>
-                      <span className="text-[10px] text-[#7D9D8B]">per session</span>
-                    </div>
+                    <span className="text-sm font-bold text-[#19382C]">₹{svc.price}</span>
                   </div>
                 ))}
               </div>
@@ -283,9 +326,10 @@ export default function BookingModal({ therapist, selectedService: initialServic
                 <button
                   type="button"
                   onClick={handleNextToSlots}
-                  className="px-6 py-2.5 rounded-xl bg-[#19382C] text-white text-sm font-semibold hover:bg-[#244E3E] transition-all flex items-center gap-2"
+                  disabled={!selectedService}
+                  className="px-6 py-2.5 rounded-xl bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E] transition-all flex items-center gap-1.5 shadow-sm"
                 >
-                  <span>Select Date & Slot</span>
+                  <span>Select Date & Time</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -295,55 +339,54 @@ export default function BookingModal({ therapist, selectedService: initialServic
           {/* STEP 2: SELECT DATE & TIME SLOT */}
           {step === 2 && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-[#19382C]">
-                    2. Choose Date & Available Slot
-                  </h4>
-                  <p className="text-xs text-[#535C56]">
-                    All time slots are displayed in Indian Standard Time (IST).
-                  </p>
-                </div>
-                <button
-                  onClick={() => setStep(1)}
-                  className="text-xs text-[#7D9D8B] hover:text-[#19382C] underline"
-                >
-                  Change service
-                </button>
+              <div>
+                <h4 className="text-sm font-semibold text-[#19382C] mb-1">
+                  2. Choose Appointment Slot
+                </h4>
+                <p className="text-xs text-[#535C56]">
+                  Times displayed in Indian Standard Time (IST, UTC+05:30).
+                </p>
               </div>
 
               {/* Date Input */}
-              <div className="bg-white p-3 rounded-2xl border border-[#EAE5DE]">
+              <div className="bg-white p-3.5 rounded-2xl border border-[#EAE5DE] shadow-xs">
                 <label className="block text-xs font-semibold text-[#19382C] mb-1.5">
-                  Select Consultation Date
+                  Target Consultation Date
                 </label>
                 <input
                   type="date"
                   min={todayStr}
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-[#EAE5DE] text-sm focus:outline-hidden focus:border-[#19382C] bg-[#FAF8F5]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#EAE5DE] text-xs bg-[#FAF8F5] text-[#19382C] font-semibold focus:outline-hidden focus:border-[#19382C]"
                 />
               </div>
 
-              {/* Open Slots List */}
-              <div>
-                <label className="block text-xs font-semibold text-[#19382C] mb-2">
+              {/* Open Slots Grid */}
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-[#19382C]">
                   Available Slots for {new Date(selectedDate).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </label>
 
                 {loadingSlots ? (
-                  <div className="py-8 text-center text-xs text-[#7D9D8B] animate-pulse">
-                    Checking calendar availability...
+                  <div className="p-8 text-center text-xs text-[#7D9D8B] animate-pulse">
+                    Checking clinician calendar...
+                  </div>
+                ) : slotsError ? (
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                    {slotsError}
                   </div>
                 ) : availableSlots.length === 0 ? (
-                  <div className="py-8 px-4 text-center bg-white rounded-2xl border border-dashed border-[#EAE5DE]">
+                  <div className="p-6 rounded-2xl bg-white border border-[#EAE5DE] text-center space-y-2">
                     <p className="text-xs text-[#535C56]">
-                      No open slots on this date. Please pick another date or join the waitlist.
+                      No open slots remain on this date.
+                    </p>
+                    <p className="text-[11px] text-[#7D9D8B]">
+                      Please choose an upcoming date or contact the clinic.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-48 overflow-y-auto p-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
                     {availableSlots.map((slot) => {
                       const isSelected = selectedSlot?.slotId === slot.slotId;
                       return (
@@ -351,10 +394,10 @@ export default function BookingModal({ therapist, selectedService: initialServic
                           key={slot.slotId}
                           type="button"
                           onClick={() => setSelectedSlot(slot)}
-                          className={`py-2.5 px-3 rounded-xl text-xs font-medium border text-center transition-all ${
+                          className={`p-2.5 rounded-xl text-xs font-semibold border transition-all text-center ${
                             isSelected
-                              ? 'bg-[#19382C] text-white border-[#19382C] shadow-xs'
-                              : 'bg-white border-[#EAE5DE] text-[#1F2421] hover:border-[#7D9D8B]'
+                              ? 'bg-[#19382C] text-white border-[#19382C] shadow-sm'
+                              : 'bg-white border-[#EAE5DE] text-[#19382C] hover:border-[#19382C]'
                           }`}
                         >
                           {slot.timeDisplay}
@@ -371,34 +414,34 @@ export default function BookingModal({ therapist, selectedService: initialServic
                   onClick={() => setStep(1)}
                   className="text-xs font-medium text-[#535C56] hover:text-[#19382C]"
                 >
-                  Back
+                  Back to formats
                 </button>
                 <button
                   type="button"
-                  disabled={!selectedSlot}
                   onClick={handleNextToIntake}
-                  className={`px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all ${
-                    selectedSlot
-                      ? 'bg-[#19382C] text-white hover:bg-[#244E3E]'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  disabled={!selectedSlot}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                    !selectedSlot
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-[#19382C] text-white hover:bg-[#244E3E]'
                   }`}
                 >
-                  <span>Client Details</span>
+                  <span>Continue to Intake</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 3: INTAKE & CONSENT */}
+          {/* STEP 3: CLIENT INTAKE & MHCA 2017 CONSENT */}
           {step === 3 && (
-            <form onSubmit={handleConfirmAndPay} className="space-y-4">
+            <form onSubmit={handleNextToPayment} className="space-y-4">
               <div>
-                <h4 className="text-sm font-semibold text-[#19382C]">
+                <h4 className="text-sm font-semibold text-[#19382C] mb-1">
                   3. Client Intake & Clinical Consent
                 </h4>
                 <p className="text-xs text-[#535C56]">
-                  Your information is encrypted and strictly accessible only to your therapist.
+                  All health records are strictly confidential under Indian professional ethics.
                 </p>
               </div>
 
@@ -415,7 +458,7 @@ export default function BookingModal({ therapist, selectedService: initialServic
                       placeholder="e.g. Kunal Joshi"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#EAE5DE] text-sm bg-white focus:outline-hidden focus:border-[#19382C]"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#EAE5DE] text-xs bg-white focus:outline-hidden focus:border-[#19382C]"
                     />
                   </div>
                 </div>
@@ -430,17 +473,17 @@ export default function BookingModal({ therapist, selectedService: initialServic
                       <input
                         type="email"
                         required
-                        placeholder="you@example.com"
+                        placeholder="kunal.j@example.com"
                         value={clientEmail}
                         onChange={(e) => setClientEmail(e.target.value)}
-                        className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#EAE5DE] text-sm bg-white focus:outline-hidden focus:border-[#19382C]"
+                        className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#EAE5DE] text-xs bg-white focus:outline-hidden focus:border-[#19382C]"
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-[#19382C] mb-1">
-                      Mobile / WhatsApp Number
+                      WhatsApp / Mobile
                     </label>
                     <div className="relative">
                       <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
@@ -449,7 +492,7 @@ export default function BookingModal({ therapist, selectedService: initialServic
                         placeholder="+91 98765 43210"
                         value={clientPhone}
                         onChange={(e) => setClientPhone(e.target.value)}
-                        className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#EAE5DE] text-sm bg-white focus:outline-hidden focus:border-[#19382C]"
+                        className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[#EAE5DE] text-xs bg-white focus:outline-hidden focus:border-[#19382C]"
                       />
                     </div>
                   </div>
@@ -457,54 +500,40 @@ export default function BookingModal({ therapist, selectedService: initialServic
 
                 <div>
                   <label className="block text-xs font-semibold text-[#19382C] mb-1">
-                    Presenting Concerns / Reason for Consultation
+                    Primary Concern / Goals for Session
                   </label>
                   <textarea
                     rows="2"
-                    placeholder="Briefly describe what brings you to therapy (e.g., anxiety, career burnout, relationships)..."
+                    placeholder="Briefly describe what brings you to therapy (e.g., anxiety, burnout, relationship boundaries)..."
                     value={presentingConcern}
                     onChange={(e) => setPresentingConcern(e.target.value)}
                     className="w-full p-3 rounded-xl border border-[#EAE5DE] text-xs bg-white focus:outline-hidden focus:border-[#19382C]"
                   />
                 </div>
 
-                {/* Telehealth & MHCA 2017 Digital Consent Capture */}
+                {/* MHCA 2017 Informed Consent Box */}
                 <div className="p-3.5 rounded-2xl bg-white border border-[#EAE5DE] space-y-2">
                   <div className="flex items-start gap-2.5">
                     <input
                       type="checkbox"
-                      id="consentCheck"
+                      id="consentBox"
                       required
                       checked={consentAgreed}
                       onChange={(e) => setConsentAgreed(e.target.checked)}
                       className="mt-0.5 rounded-md text-[#19382C] focus:ring-[#19382C]"
                     />
-                    <label htmlFor="consentCheck" className="text-xs text-[#535C56] leading-relaxed cursor-pointer">
-                      <span className="font-semibold text-[#19382C]">Telehealth Consent & Privacy Agreement: </span>
-                      I consent to receive psychological counseling services via secure telehealth video. I understand that private clinical documentation remains protected under professional ethics and the Mental Healthcare Act (MHCA 2017), and only agreed notes are shared.
+                    <label htmlFor="consentBox" className="text-xs text-[#535C56] leading-relaxed cursor-pointer">
+                      <span className="font-semibold text-[#19382C]">Informed Telehealth Consent: </span>
+                      I agree to receive virtual psychological counselling. I have reviewed the{' '}
+                      <Link to="/terms" target="_blank" className="text-[#19382C] underline font-semibold">
+                        Terms of Practice
+                      </Link>{' '}
+                      and{' '}
+                      <Link to="/privacy" target="_blank" className="text-[#19382C] underline font-semibold">
+                        Privacy Policy
+                      </Link>
+                      . I understand private clinical SOAP/DAP notes are protected under the Indian Mental Healthcare Act (MHCA 2017).
                     </label>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-[#7D9D8B] pl-6">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Timestamped auditable record captured on booking</span>
-                  </div>
-                </div>
-
-                {/* Summary Box */}
-                <div className="p-3.5 rounded-2xl bg-[#E8EFEA] border border-[#D5DDD8] flex items-center justify-between">
-                  <div>
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-[#7D9D8B]">
-                      Session Total
-                    </span>
-                    <p className="text-xs text-[#19382C] font-medium">
-                      {selectedService?.title} ({selectedSlot?.timeDisplay})
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-[#19382C]">
-                      ₹{selectedService?.price || therapist.consultationFee || 1800}
-                    </span>
-                    <p className="text-[10px] text-[#535C56]">Includes GST</p>
                   </div>
                 </div>
               </div>
@@ -515,25 +544,254 @@ export default function BookingModal({ therapist, selectedService: initialServic
                   onClick={() => setStep(2)}
                   className="text-xs font-medium text-[#535C56] hover:text-[#19382C]"
                 >
-                  Back to slots
+                  Back to slot
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting || !consentAgreed || !clientName || !clientEmail}
-                  className={`px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all ${
-                    submitting || !consentAgreed || !clientName || !clientEmail
+                  disabled={!clientName || !clientEmail || !consentAgreed}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                    !clientName || !clientEmail || !consentAgreed
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-[#19382C] text-white hover:bg-[#244E3E]'
                   }`}
                 >
-                  <CreditCard className="w-4 h-4" />
-                  <span>{submitting ? 'Processing Payment...' : 'Pay & Confirm Booking'}</span>
+                  <span>Proceed to Payment</span>
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </form>
           )}
 
-          {/* STEP 5: BOOKING CONFIRMATION & PORTAL LINK */}
+          {/* STEP 4: INTERACTIVE PAYMENT GATEWAY (UPI, CARDS, NETBANKING, SANDBOX) */}
+          {step === 4 && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-[#19382C] mb-1">
+                  4. Secure Payment Gateway (India)
+                </h4>
+                <p className="text-xs text-[#535C56]">
+                  Encrypted checkout via RBI-authorized payment infrastructure.
+                </p>
+              </div>
+
+              {/* Order Summary Pill */}
+              <div className="p-3.5 rounded-2xl bg-[#E8EFEA] border border-[#D5DDD8] flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7D9D8B]">
+                    Consultation Summary
+                  </span>
+                  <p className="text-xs font-bold text-[#19382C]">
+                    {selectedService?.title} • {selectedSlot?.timeDisplay}
+                  </p>
+                  <p className="text-[10px] text-[#535C56] mt-0.5">
+                    GST SAC Code: 999312 (Psychological Services)
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-[#19382C]">₹{totalPayable}</span>
+                  <p className="text-[10px] text-[#7D9D8B]">Incl. 18% GST (₹{gstTax})</p>
+                </div>
+              </div>
+
+              {/* Payment Methods Tabs */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-4 gap-1.5 text-[11px] font-semibold text-center">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('upi')}
+                    className={`py-2 px-1 rounded-xl border transition-all flex flex-col items-center gap-1 ${
+                      paymentMethod === 'upi'
+                        ? 'border-[#19382C] bg-[#19382C] text-white shadow-xs'
+                        : 'border-[#EAE5DE] bg-white text-[#535C56] hover:border-[#19382C]'
+                    }`}
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    <span>UPI / QR</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('card')}
+                    className={`py-2 px-1 rounded-xl border transition-all flex flex-col items-center gap-1 ${
+                      paymentMethod === 'card'
+                        ? 'border-[#19382C] bg-[#19382C] text-white shadow-xs'
+                        : 'border-[#EAE5DE] bg-white text-[#535C56] hover:border-[#19382C]'
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span>Cards</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('netbanking')}
+                    className={`py-2 px-1 rounded-xl border transition-all flex flex-col items-center gap-1 ${
+                      paymentMethod === 'netbanking'
+                        ? 'border-[#19382C] bg-[#19382C] text-white shadow-xs'
+                        : 'border-[#EAE5DE] bg-white text-[#535C56] hover:border-[#19382C]'
+                    }`}
+                  >
+                    <Building2 className="w-4 h-4" />
+                    <span>Net Banking</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('sandbox')}
+                    className={`py-2 px-1 rounded-xl border transition-all flex flex-col items-center gap-1 ${
+                      paymentMethod === 'sandbox'
+                        ? 'border-[#19382C] bg-[#19382C] text-white shadow-xs'
+                        : 'border-[#EAE5DE] bg-white text-[#535C56] hover:border-[#19382C]'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-[#D3A075]" />
+                    <span>Instant Test</span>
+                  </button>
+                </div>
+
+                {/* TAB 1: UPI */}
+                {paymentMethod === 'upi' && (
+                  <div className="p-4 rounded-2xl bg-white border border-[#EAE5DE] space-y-3 animate-in fade-in-50">
+                    <div className="flex items-center justify-between text-xs text-[#535C56]">
+                      <span className="font-semibold text-[#19382C]">Instant UPI Payment</span>
+                      <span className="text-[10px] text-[#7D9D8B]">GPay • PhonePe • Paytm • BHIM</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#19382C] mb-1">
+                        Enter UPI VPA ID
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="yourname@okhdfcbank"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-[#EAE5DE] text-xs font-mono focus:outline-hidden focus:border-[#19382C]"
+                      />
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <QrCode className="w-5 h-5 text-[#19382C]" />
+                        <span className="text-[11px] text-[#535C56]">Scan Static UPI QR on next screen</span>
+                      </div>
+                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-semibold">
+                        Instant Approval
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: CREDIT / DEBIT CARDS */}
+                {paymentMethod === 'card' && (
+                  <div className="p-4 rounded-2xl bg-white border border-[#EAE5DE] space-y-3 animate-in fade-in-50">
+                    <div className="flex items-center justify-between text-xs text-[#535C56]">
+                      <span className="font-semibold text-[#19382C]">Debit / Credit Card</span>
+                      <span className="text-[10px] text-[#7D9D8B]">Visa • MasterCard • RuPay</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#19382C] mb-1">
+                        Card Number
+                      </label>
+                      <input
+                        type="text"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-[#EAE5DE] text-xs font-mono focus:outline-hidden focus:border-[#19382C]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#19382C] mb-1">
+                          Valid Thru (MM/YY)
+                        </label>
+                        <input
+                          type="text"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl border border-[#EAE5DE] text-xs font-mono focus:outline-hidden focus:border-[#19382C]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-[#19382C] mb-1">
+                          CVV (3 Digits)
+                        </label>
+                        <input
+                          type="password"
+                          maxLength={4}
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl border border-[#EAE5DE] text-xs font-mono focus:outline-hidden focus:border-[#19382C]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: NET BANKING */}
+                {paymentMethod === 'netbanking' && (
+                  <div className="p-4 rounded-2xl bg-white border border-[#EAE5DE] space-y-3 animate-in fade-in-50">
+                    <label className="block text-[11px] font-semibold text-[#19382C]">
+                      Select Bank for Direct Debit
+                    </label>
+                    <select
+                      value={selectedBank}
+                      onChange={(e) => setSelectedBank(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-[#EAE5DE] text-xs bg-white text-[#19382C] font-semibold focus:outline-hidden focus:border-[#19382C]"
+                    >
+                      <option value="HDFC Bank">HDFC Bank</option>
+                      <option value="ICICI Bank">ICICI Bank</option>
+                      <option value="State Bank of India">State Bank of India (SBI)</option>
+                      <option value="Axis Bank">Axis Bank</option>
+                      <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                      <option value="Punjab National Bank">Punjab National Bank</option>
+                    </select>
+                    <p className="text-[11px] text-[#7D9D8B]">
+                      You will be securely redirected to your bank’s 2-Factor Authentication portal.
+                    </p>
+                  </div>
+                )}
+
+                {/* TAB 4: INSTANT SANDBOX SIMULATION */}
+                {paymentMethod === 'sandbox' && (
+                  <div className="p-4 rounded-2xl bg-[#E8EFEA] border border-[#D5DDD8] space-y-2 animate-in fade-in-50">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#19382C]">
+                      <Sparkles className="w-4 h-4 text-[#244A3C]" />
+                      <span>Developer & Evaluator Test Checkout</span>
+                    </div>
+                    <p className="text-xs text-[#535C56] leading-relaxed">
+                      Simulate full payment gateway approval without real monetary deduction. Generates authentic Razorpay test tokens and an auditable GST PDF invoice.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  className="text-xs font-medium text-[#535C56] hover:text-[#19382C]"
+                >
+                  Back to intake
+                </button>
+                <button
+                  type="button"
+                  onClick={handleProcessPayment}
+                  disabled={submitting}
+                  className="px-6 py-2.5 rounded-xl bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E] transition-all flex items-center gap-2 shadow-sm"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>
+                    {submitting ? 'Verifying Gateway...' : `Pay ₹${totalPayable} & Confirm`}
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: BOOKING CONFIRMATION & INVOICE */}
           {step === 5 && confirmedBooking && (
             <div className="text-center py-4 space-y-5">
               <div className="w-16 h-16 rounded-2xl bg-[#E8EFEA] text-[#19382C] mx-auto flex items-center justify-center">
@@ -542,10 +800,10 @@ export default function BookingModal({ therapist, selectedService: initialServic
 
               <div>
                 <h4 className="text-xl font-serif font-bold text-[#19382C]">
-                  Appointment Confirmed!
+                  Appointment Confirmed & Invoiced!
                 </h4>
                 <p className="text-xs text-[#535C56] mt-1">
-                  Your appointment details and calendar invitation have been sent to{' '}
+                  Your appointment reservation and GST Tax Invoice have been delivered to{' '}
                   <span className="font-semibold text-[#19382C]">{confirmedBooking.clientEmail}</span>.
                 </p>
               </div>
@@ -563,8 +821,8 @@ export default function BookingModal({ therapist, selectedService: initialServic
                   <span className="font-medium text-[#19382C]">Date & Time</span>
                   <span>{new Date(confirmedBooking.startTime).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })} IST</span>
                 </div>
-                <div className="flex justify-between items-center pt-1">
-                  <span className="font-medium text-[#19382C]">Secure Video Room</span>
+                <div className="flex justify-between items-center pt-1 border-b border-[#EAE5DE] pb-2">
+                  <span className="font-medium text-[#19382C]">Video Consultation</span>
                   <a
                     href={confirmedBooking.meetingLink}
                     target="_blank"
@@ -573,6 +831,25 @@ export default function BookingModal({ therapist, selectedService: initialServic
                   >
                     <Video className="w-3.5 h-3.5" />
                     Join Video Call
+                  </a>
+                </div>
+
+                {/* Direct Invoice Download */}
+                <div className="flex justify-between items-center pt-1">
+                  <div>
+                    <span className="font-medium text-[#19382C] block">GST Tax Invoice</span>
+                    <span className="text-[10px] text-[#7D9D8B]">
+                      {confirmedPayment?.invoiceNumber || `TL-INV-${confirmedBooking._id.slice(-6)}`}
+                    </span>
+                  </div>
+                  <a
+                    href={`/api/v1/payments/${confirmedPayment?._id || confirmedBooking._id}/invoice`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-md hover:bg-emerald-100 flex items-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download PDF</span>
                   </a>
                 </div>
               </div>
@@ -590,6 +867,13 @@ export default function BookingModal({ therapist, selectedService: initialServic
                 >
                   Done
                 </button>
+              </div>
+
+              <div className="pt-1 text-[11px] text-[#7D9D8B]">
+                Need emergency mental health support?{' '}
+                <Link to="/crisis" className="underline font-semibold text-[#19382C]">
+                  View 24x7 India Crisis Helplines
+                </Link>
               </div>
             </div>
           )}

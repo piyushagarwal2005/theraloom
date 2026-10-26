@@ -37,6 +37,17 @@ export default function Payments() {
   });
   const [creatingPkg, setCreatingPkg] = useState(false);
 
+  // Manual Offline Payment Modal
+  const [manualModalOpen, setManualModalOpen] = useState(false);
+  const [manualData, setManualData] = useState({
+    clientName: '',
+    clientEmail: '',
+    amount: 1800,
+    paymentMethod: 'cash',
+    description: 'In-clinic / Offline Therapy Consultation',
+  });
+  const [recordingManual, setRecordingManual] = useState(false);
+
   const fetchPaymentsAndPackages = async () => {
     setLoading(true);
     try {
@@ -89,6 +100,30 @@ export default function Payments() {
     }
   };
 
+  const handleRecordManualPayment = async (e) => {
+    e.preventDefault();
+    setRecordingManual(true);
+    try {
+      const res = await api.post('/payments/record-manual', {
+        clientName: manualData.clientName,
+        clientEmail: manualData.clientEmail,
+        amount: Number(manualData.amount),
+        paymentMethod: manualData.paymentMethod,
+        description: manualData.description,
+      });
+
+      if (res.data?.success) {
+        setManualModalOpen(false);
+        fetchPaymentsAndPackages();
+        alert('Payment recorded and GST Tax invoice generated successfully!');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to record manual payment.');
+    } finally {
+      setRecordingManual(false);
+    }
+  };
+
   const filteredPayments = payments.filter((p) => {
     if (!search) return true;
     const term = search.toLowerCase();
@@ -122,10 +157,10 @@ export default function Payments() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               onClick={() => setActiveTab('transactions')}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === 'transactions'
                   ? 'bg-[#19382C] text-white shadow-xs'
                   : 'bg-white text-[#535C56] border border-[#EAE5DE]'
@@ -135,13 +170,21 @@ export default function Payments() {
             </button>
             <button
               onClick={() => setActiveTab('packages')}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                 activeTab === 'packages'
                   ? 'bg-[#19382C] text-white shadow-xs'
                   : 'bg-white text-[#535C56] border border-[#EAE5DE]'
               }`}
             >
               Packages ({packages.length})
+            </button>
+
+            <button
+              onClick={() => setManualModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-emerald-800 text-white text-xs font-semibold hover:bg-emerald-900 transition-all flex items-center gap-1.5 shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Record Offline Payment</span>
             </button>
           </div>
         </div>
@@ -445,6 +488,112 @@ export default function Payments() {
                     className="px-5 py-2.5 rounded-xl bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E]"
                   >
                     {creatingPkg ? 'Saving...' : 'Publish Package'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+        {/* Modal: Record Offline Payment */}
+        {manualModalOpen && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border border-[#EAE5DE] shadow-2xl">
+              <div className="flex items-center justify-between pb-3 border-b border-[#EAE5DE]">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-[#19382C]" />
+                  <h3 className="font-serif font-bold text-lg text-[#19382C]">
+                    Record Offline Payment
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setManualModalOpen(false)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleRecordManualPayment} className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-semibold text-[#19382C] mb-1">Client Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Kunal Joshi"
+                    value={manualData.clientName}
+                    onChange={(e) => setManualData({ ...manualData, clientName: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5DE] bg-[#FAF8F5]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#19382C] mb-1">Client Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="kunal.j@example.com"
+                    value={manualData.clientEmail}
+                    onChange={(e) => setManualData({ ...manualData, clientEmail: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5DE] bg-[#FAF8F5]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#19382C] mb-1">Amount (₹ INR) *</label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      value={manualData.amount}
+                      onChange={(e) => setManualData({ ...manualData, amount: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5DE] bg-[#FAF8F5] font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-[#19382C] mb-1">Payment Method</label>
+                    <select
+                      value={manualData.paymentMethod}
+                      onChange={(e) => setManualData({ ...manualData, paymentMethod: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5DE] bg-[#FAF8F5]"
+                    >
+                      <option value="cash">Cash in Clinic</option>
+                      <option value="upi">Direct UPI Transfer</option>
+                      <option value="bank_transfer">Direct NEFT / IMPS</option>
+                      <option value="other">Other / Cheque</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#19382C] mb-1">Session / Service Notes</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Individual Psychotherapy Session #3"
+                    value={manualData.description}
+                    onChange={(e) => setManualData({ ...manualData, description: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5DE] bg-[#FAF8F5]"
+                  />
+                </div>
+
+                <div className="p-3 rounded-xl bg-[#E8EFEA] border border-[#D5DDD8] text-[11px] text-[#535C56]">
+                  A GST-compliant tax receipt (TL-INV-XXXXXX) with 18% SAC 999312 calculation will be automatically generated and made available for download.
+                </div>
+
+                <div className="pt-3 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setManualModalOpen(false)}
+                    className="px-4 py-2 text-xs text-[#535C56]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={recordingManual}
+                    className="px-5 py-2.5 rounded-xl bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E]"
+                  >
+                    {recordingManual ? 'Recording...' : 'Record Payment & Generate Invoice'}
                   </button>
                 </div>
               </form>

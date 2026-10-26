@@ -261,7 +261,18 @@ exports.getTherapistPayments = async (req, res, next) => {
 // @access  Public
 exports.getInvoicePDF = async (req, res, next) => {
   try {
-    const payment = await Payment.findById(req.params.id);
+    let payment = null;
+    const mongoose = require('mongoose');
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      payment = await Payment.findById(req.params.id);
+      if (!payment) {
+        payment = await Payment.findOne({ sessionId: req.params.id });
+      }
+    }
+    if (!payment) {
+      payment = await Payment.findOne({ invoiceNumber: req.params.id });
+    }
+
     if (!payment) {
       return res.status(404).json({ success: false, message: 'Payment record not found.' });
     }
@@ -365,6 +376,50 @@ exports.createPackage = async (req, res, next) => {
       success: true,
       message: 'Package created successfully.',
       package: pkg,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Record manual / offline payment (Cash, Direct Bank Transfer, Offline UPI)
+// @route   POST /api/v1/payments/record-manual
+// @access  Private (Therapist)
+exports.recordManualPayment = async (req, res, next) => {
+  try {
+    const { clientId, clientName, clientEmail, amount, paymentMethod = 'cash', description, sessionId } = req.body;
+
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ success: false, message: 'Valid payment amount is required.' });
+    }
+
+    const parsedAmount = Number(amount);
+    const invoiceNumber = `TL-INV-${Date.now().toString().slice(-6)}`;
+    const taxAmount = Math.round(parsedAmount * 0.18);
+
+    const payment = await Payment.create({
+      therapistId: req.therapist._id,
+      clientId: clientId || null,
+      clientName: clientName || 'Client',
+      clientEmail: (clientEmail || '').toLowerCase(),
+      sessionId: sessionId || null,
+      amount: parsedAmount,
+      amountInPaise: Math.round(parsedAmount * 100),
+      currency: 'INR',
+      status: 'captured',
+      paymentMethod,
+      invoiceNumber,
+      taxAmount,
+      platformFee: 0,
+      netAmount: parsedAmount,
+      razorpayOrderId: `manual_${Date.now()}`,
+      razorpayPaymentId: `manual_pay_${Date.now()}`,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Manual payment recorded and GST invoice generated.',
+      payment,
     });
   } catch (error) {
     next(error);

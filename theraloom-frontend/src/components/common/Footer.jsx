@@ -81,9 +81,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#emergency" className="hover:text-rose-300 transition-colors">
-                  Crisis Helplines (India)
-                </a>
+                <Link to="/crisis" className="hover:text-rose-300 transition-colors font-medium text-rose-200">
+                  Emergency Helplines (India)
+                </Link>
               </li>
             </ul>
           </div>
@@ -98,10 +98,13 @@ export default function Footer() {
               Theraloom is a practice scheduling tool and not an emergency service. In crisis, please call:
             </p>
             <div className="text-[11px] font-mono text-[#FAF8F5] space-y-0.5">
-              <div>• Tele-MANAS: <span className="font-bold text-white">14416</span> (Govt. of India)</div>
-              <div>• Vandrevala: <span className="font-bold text-white">+91 9999 666 555</span></div>
-              <div>• KIRAN: <span className="font-bold text-white">1800-599-0019</span></div>
+              <div>• Tele-MANAS: <a href="tel:14416" className="font-bold text-white underline hover:text-emerald-300">14416</a> (Govt. of India)</div>
+              <div>• Vandrevala: <a href="tel:+919999666555" className="font-bold text-white underline hover:text-emerald-300">+91 9999 666 555</a></div>
+              <div>• KIRAN: <a href="tel:18005990019" className="font-bold text-white underline hover:text-emerald-300">1800-599-0019</a></div>
             </div>
+            <Link to="/crisis" className="inline-block text-[11px] text-[#A9BDA9] hover:text-white underline mt-2.5">
+              View all 24x7 India helplines & protocols →
+            </Link>
           </div>
         </div>
 
@@ -109,9 +112,9 @@ export default function Footer() {
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-[#7D9D8B] gap-4">
           <p>© {new Date().getFullYear()} Theraloom (theraloom.in). All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span>
-            <span className="hover:text-white cursor-pointer transition-colors">Terms of Practice</span>
-            <span className="hover:text-white cursor-pointer transition-colors">Security & Compliance</span>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms of Practice</Link>
+            <Link to="/security" className="hover:text-white transition-colors">Security & Compliance</Link>
           </div>
         </div>
       </div>

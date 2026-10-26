@@ -7,6 +7,7 @@ const {
   getInvoicePDF,
   getPackagesBySlug,
   createPackage,
+  recordManualPayment,
 } = require('../controllers/paymentController');
 const { protectTherapist } = require('../middleware/authMiddleware');
 
@@ -22,5 +23,6 @@ router.get('/packages/:slug', getPackagesBySlug);
 // Protected routes (Therapist)
 router.get('/', protectTherapist, getTherapistPayments);
 router.post('/packages', protectTherapist, createPackage);
+router.post('/record-manual', protectTherapist, recordManualPayment);
 
 module.exports = router;

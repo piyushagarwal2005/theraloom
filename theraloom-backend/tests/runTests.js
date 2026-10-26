@@ -286,6 +286,32 @@ async function run() {
     assert(responseData.conversation, 'Should return conversation object');
   });
 
+  const paymentController = require('../src/controllers/paymentController');
+  await it('Therapist records manual offline payment and invoice PDF generates', async () => {
+    let responseData = null;
+    let statusCode = null;
+    const req = {
+      therapist: testTherapist,
+      body: {
+        clientId: testClient._id,
+        clientName: testClient.name,
+        clientEmail: testClient.email,
+        amount: 2500,
+        paymentMethod: 'cash',
+        description: 'Offline Clinic Psychotherapy Session',
+      },
+    };
+    const res = {
+      status: (code) => { statusCode = code; return res; },
+      json: (data) => { responseData = data; return res; },
+    };
+    await paymentController.recordManualPayment(req, res, (err) => { if (err) throw err; });
+    assert.strictEqual(statusCode, 201);
+    assert.strictEqual(responseData.success, true);
+    assert.strictEqual(responseData.payment.amount, 2500);
+    assert.strictEqual(responseData.payment.paymentMethod, 'cash');
+  });
+
   console.log('\n======================================================');
   console.log(`📊 Test Results: ${passedTests} Passed, ${failedTests} Failed`);
   console.log('======================================================\n');
