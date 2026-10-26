@@ -1,0 +1,15 @@
+<svg width="400" height="260" viewBox="0 0 400 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="260" rx="16" fill="#F4EFEB"/>
+  <!-- Laptop Device Frame -->
+  <rect x="110" y="55" width="180" height="115" rx="8" fill="#1F2421"/>
+  <rect x="118" y="63" width="164" height="99" rx="4" fill="#FAF8F5"/>
+  <!-- Screen content: video feed avatar with sound wave -->
+  <circle cx="200" cy="100" r="20" fill="#244A3C"/>
+  <path d="M178 135C178 122 188 116 200 116C212 116 222 122 222 135H178Z" fill="#244A3C"/>
+  <!-- Base of laptop -->
+  <path d="M85 170L95 182H305L315 170H85Z" fill="#9DA59F" rx="2"/>
+  <rect x="175" y="172" width="50" height="4" rx="2" fill="#FAF8F5"/>
+  <!-- Encryption / Security indicator -->
+  <circle cx="200" cy="215" r="14" fill="#E4ECE7"/>
+  <path d="M196 215V212C196 209.79 197.79 208 200 208C202.21 208 204 209.79 204 212V215M194 215H206V222H194V215Z" stroke="#244A3C" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg width="240" height="180" viewBox="0 0 240 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="50" y="30" width="140" height="110" rx="12" fill="#F4EFEB" stroke="#EAE5DE" stroke-width="2"/>
+  <!-- Calendar header -->
+  <path d="M50 42C50 35.3726 55.3726 30 62 30H178C184.627 30 190 35.3726 190 42V55H50V42Z" fill="#19382C"/>
+  <circle cx="70" cy="42" r="3" fill="#A9BDA9"/>
+  <circle cx="85" cy="42" r="3" fill="#A9BDA9"/>
+  <!-- Calming plant over calendar -->
+  <circle cx="120" cy="95" r="20" fill="#E8EFEA"/>
+  <path d="M120 105C115 90 125 80 130 85C130 95 125 105 120 105Z" fill="#7D9D8B"/>
+  <path d="M120 105C125 90 115 80 110 85C110 95 115 105 120 105Z" fill="#244A3C"/>
+</svg>

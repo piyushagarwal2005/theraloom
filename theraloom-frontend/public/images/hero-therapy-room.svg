@@ -1,0 +1,59 @@
+<svg width="600" height="420" viewBox="0 0 600 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wallGrad" x1="0" y1="0" x2="600" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F7F4EE"/>
+      <stop offset="100%" stop-color="#EBE4D8"/>
+    </linearGradient>
+    <linearGradient id="plantGrad" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5B876E"/>
+      <stop offset="100%" stop-color="#244A3C"/>
+    </linearGradient>
+  </defs>
+  <!-- Room Wall & Floor -->
+  <rect width="600" height="340" fill="url(#wallGrad)"/>
+  <rect y="340" width="600" height="80" fill="#DDD5C7"/>
+  <line x1="0" y1="340" x2="600" y2="340" stroke="#CFC5B4" stroke-width="2"/>
+  
+  <!-- Window with soft daylight -->
+  <rect x="70" y="50" width="140" height="180" rx="8" fill="#FBFDFB" stroke="#D3CDC3" stroke-width="4"/>
+  <line x1="140" y1="50" x2="140" y2="230" stroke="#D3CDC3" stroke-width="3"/>
+  <line x1="70" y1="140" x2="210" y2="140" stroke="#D3CDC3" stroke-width="3"/>
+  <rect x="75" y="55" width="60" height="80" fill="#EBF4EE" opacity="0.6"/>
+  
+  <!-- Calming Wall Art Frame -->
+  <rect x="260" y="60" width="120" height="90" rx="4" fill="#FFFFFF" stroke="#B8AFA2" stroke-width="2"/>
+  <circle cx="320" cy="105" r="28" fill="#F4EFEB"/>
+  <path d="M305 115C315 95 325 95 335 115" stroke="#7D9D8B" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="320" cy="92" r="5" fill="#D3A075"/>
+  
+  <!-- Therapy Armchair 1 (Left) -->
+  <path d="M190 280C190 230 220 210 260 210C300 210 330 230 330 280V330H190V280Z" fill="#244A3C" rx="12"/>
+  <rect x="205" y="270" width="110" height="50" rx="8" fill="#2D5A49"/>
+  <!-- Armchair cushion / pillow -->
+  <rect x="235" y="240" width="50" height="40" rx="6" fill="#F4EFEB"/>
+  <!-- Legs -->
+  <line x1="210" y1="330" x2="205" y2="360" stroke="#695847" stroke-width="5" stroke-linecap="round"/>
+  <line x1="310" y1="330" x2="315" y2="360" stroke="#695847" stroke-width="5" stroke-linecap="round"/>
+  
+  <!-- Minimalist Side Table with Tea & Notebook -->
+  <ellipse cx="380" cy="310" rx="35" ry="12" fill="#E2DACD"/>
+  <rect x="376" y="310" width="8" height="55" fill="#8B7B6B"/>
+  <ellipse cx="380" cy="365" rx="20" ry="6" fill="#C5BAA9"/>
+  <!-- Ceramic Cup -->
+  <rect x="370" y="295" width="14" height="15" rx="3" fill="#FFFFFF"/>
+  <path d="M384 298C387 298 388 303 384 306" stroke="#FFFFFF" stroke-width="2"/>
+  <!-- Notepad -->
+  <rect x="390" y="298" width="18" height="12" rx="1" fill="#7D9D8B" transform="rotate(-15 390 298)"/>
+  
+  <!-- Calming House Plant in Ceramic Pot -->
+  <path d="M455 370L470 320H510L525 370H455Z" fill="#F5F0E6" stroke="#D3CDC3" stroke-width="2"/>
+  <!-- Leaves -->
+  <path d="M490 320C470 270 450 250 430 260C450 280 475 295 490 320Z" fill="url(#plantGrad)"/>
+  <path d="M490 320C500 250 520 220 545 230C535 260 515 285 490 320Z" fill="url(#plantGrad)"/>
+  <path d="M490 320C485 240 490 200 495 190C505 230 500 270 490 320Z" fill="#437158"/>
+  <path d="M490 320C455 290 435 305 420 315C445 325 470 322 490 320Z" fill="#5B876E"/>
+  <path d="M490 320C525 300 550 310 565 325C540 330 515 325 490 320Z" fill="#5B876E"/>
+
+  <!-- Soft Floor Rug -->
+  <ellipse cx="300" cy="385" rx="170" ry="22" fill="#E7DFD2" opacity="0.7"/>
+</svg>

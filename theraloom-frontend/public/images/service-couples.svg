@@ -1,0 +1,12 @@
+<svg width="400" height="260" viewBox="0 0 400 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="260" rx="16" fill="#F4EFEB"/>
+  <!-- Interlocking rings of communication and relationship harmony -->
+  <circle cx="165" cy="120" r="45" stroke="#244A3C" stroke-width="4" stroke-opacity="0.85"/>
+  <circle cx="235" cy="120" r="45" stroke="#7D9D8B" stroke-width="4" stroke-opacity="0.85"/>
+  <!-- Overlapping heart/leaf intersection -->
+  <circle cx="165" cy="100" r="16" fill="#244A3C"/>
+  <circle cx="235" cy="100" r="16" fill="#7D9D8B"/>
+  <path d="M190 145C195 135 205 135 210 145C200 155 200 155 190 145Z" fill="#D3A075"/>
+  <!-- Support foundation -->
+  <line x1="120" y1="195" x2="280" y2="195" stroke="#EAE5DE" stroke-width="3" stroke-linecap="round"/>
+</svg>

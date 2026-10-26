@@ -1,0 +1,12 @@
+<svg width="400" height="260" viewBox="0 0 400 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="260" rx="16" fill="#F4EFEB"/>
+  <!-- Two seated figures in dialogue -->
+  <circle cx="140" cy="95" r="24" fill="#244A3C"/>
+  <path d="M105 180C105 145 125 130 140 130C155 130 175 145 175 180H105Z" fill="#244A3C"/>
+  <circle cx="260" cy="95" r="24" fill="#7D9D8B"/>
+  <path d="M225 180C225 145 245 130 260 130C275 130 295 145 295 180H225Z" fill="#7D9D8B"/>
+  <!-- Empathy connection line / gentle arc -->
+  <path d="M165 95C190 70 210 70 235 95" stroke="#D3A075" stroke-width="4" stroke-dasharray="4 4" stroke-linecap="round"/>
+  <!-- Floor line -->
+  <line x1="80" y1="205" x2="320" y2="205" stroke="#EAE5DE" stroke-width="3" stroke-linecap="round"/>
+</svg>

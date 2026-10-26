@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-cream: #FAF8F5;
+    --color-cream-subtle: #F4EFEB;
+    --color-forest: #19382C;
+    --color-forest-dark: #122B21;
+    --color-forest-light: #244E3E;
+    --color-sage: #7D9D8B;
+    --color-sage-light: #E4ECE7;
+    --color-charcoal: #1F2421;
+    --color-charcoal-muted: #535C56;
+    --color-sand: #EAE5DE;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-charcoal);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom utility classes */
+.bg-cream { background-color: #FAF8F5; }
+.bg-cream-card { background-color: #FFFFFF; }
+.bg-forest { background-color: #19382C; }
+.bg-forest-dark { background-color: #122B21; }
+.bg-forest-light { background-color: #244E3E; }
+.bg-sage { background-color: #7D9D8B; }
+.bg-sage-light { background-color: #E8EFEA; }
+
+.text-forest { color: #19382C; }
+.text-forest-dark { color: #122B21; }
+.text-sage { color: #5F7F6E; }
+.text-charcoal { color: #1F2421; }
+.text-charcoal-muted { color: #535C56; }
+
+.border-forest { border-color: #19382C; }
+.border-sage { border-color: #7D9D8B; }
+.border-sand { border-color: #EAE5DE; }
+
+/* TipTap Editor Styling */
+.tiptap {
+  min-height: 180px;
+  outline: none;
+}
+.tiptap p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+.tiptap h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #19382C;
+}
+.tiptap h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #19382C;
+}
+.tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+.tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+.tiptap blockquote {
+  border-left: 3px solid #7D9D8B;
+  padding-left: 1rem;
+  color: #535C56;
+  font-style: italic;
+  margin: 0.75rem 0;
+}
