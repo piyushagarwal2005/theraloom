@@ -50,7 +50,11 @@ export default function ChatWindow({
   useEffect(() => {
     if (!conversationId) return;
 
-    const socketUrl = window.location.origin;
+    const socketUrl =
+      import.meta.env.VITE_SOCKET_URL ||
+      (import.meta.env.VITE_API_BASE_URL
+        ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/v1\/?$/, '')
+        : window.location.origin);
     const socket = io(socketUrl, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],

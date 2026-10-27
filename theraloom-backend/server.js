@@ -15,7 +15,13 @@ const server = http.createServer(app);
 // Setup Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://localhost:3000', process.env.FRONTEND_URL].filter(Boolean),
+    origin: (origin, callback) => {
+      // Allow localhost, FRONTEND_URL, or any *.vercel.app domain
+      if (!origin || origin.includes('localhost') || origin.endsWith('.vercel.app') || (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL)) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Permissive fallback
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   },
