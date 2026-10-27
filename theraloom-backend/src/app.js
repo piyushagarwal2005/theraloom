@@ -51,6 +51,22 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static uploaded files (avatars, invoices)
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
+// Root status & welcome endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: '🌿 Theraloom Backend API is running successfully on Render!',
+    version: '1.0.0',
+    status: 'healthy',
+    endpoints: {
+      health: '/api/v1/health',
+      directory: '/api/v1/therapists/public',
+      tiers: '/api/v1/tiers',
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Health check endpoint
 app.get('/api/v1/health', (req, res) => {
   res.status(200).json({
