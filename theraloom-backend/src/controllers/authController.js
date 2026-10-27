@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const Therapist = require('../models/Therapist');
 const Availability = require('../models/Availability');
 const { getUniqueSlug } = require('../utils/generateSlug');
+const autoProvision = require('../utils/autoProvision');
 
 const generateToken = (id) => {
   const secret = process.env.JWT_SECRET || 'theraloom_super_secure_jwt_secret_key_2026_india';
@@ -99,7 +100,15 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    const therapist = await Therapist.findOne({ email: email.toLowerCase() }).select('+password_hash');
+    let therapist = await Therapist.findOne({ email: email.toLowerCase() }).select('+password_hash');
+    if (!therapist) {
+      // If demo email, run autoProvision to seed accounts and re-try
+      if (email.toLowerCase().includes('theraloom.in')) {
+        await autoProvision();
+        therapist = await Therapist.findOne({ email: email.toLowerCase() }).select('+password_hash');
+      }
+    }
+
     if (!therapist) {
       return res.status(401).json({
         success: false,
