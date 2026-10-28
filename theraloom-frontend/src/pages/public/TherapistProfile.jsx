@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import {
   Calendar,
   Clock,
@@ -27,6 +27,11 @@ import api from '../../api/axiosInstance';
 
 export default function TherapistProfile() {
   const { slug } = useParams();
+
+  // If slug is repository name or home subpath, redirect to Home
+  if (slug === 'theraloom-live' || slug === 'theraloom' || slug === 'theraloom-site') {
+    return <Navigate to="/" replace />;
+  }
   const [therapist, setTherapist] = useState(null);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
