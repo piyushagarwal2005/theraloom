@@ -5,12 +5,12 @@ import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import AppRoutes from './routes/AppRoutes';
 
-function ScrollToHash() {
-  const { hash, pathname } = useLocation();
+function ScrollToTopAndHash() {
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    // If a hash is present in the URL, scroll smoothly to the corresponding element
     if (hash) {
+      // If navigating with an in-page section hash (e.g. #patterns, #directory)
       const id = hash.replace('#', '');
       const scrollToEl = () => {
         const element = document.getElementById(id);
@@ -19,17 +19,20 @@ function ScrollToHash() {
         }
       };
 
-      // Immediate attempt
       scrollToEl();
-      // Deferred attempts to ensure dynamic components and images have completed their layout
-      const timer1 = setTimeout(scrollToEl, 120);
-      const timer2 = setTimeout(scrollToEl, 350);
+      const timer1 = setTimeout(scrollToEl, 100);
+      const timer2 = setTimeout(scrollToEl, 300);
       return () => {
         clearTimeout(timer1);
         clearTimeout(timer2);
       };
+    } else {
+      // Whenever navigating to a page without a hash, reset scroll position immediately to the top
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
     }
-  }, [hash, pathname]);
+  }, [pathname, hash]);
 
   return null;
 }
@@ -48,7 +51,7 @@ export default function App() {
 
   return (
     <BrowserRouter basename={basename}>
-      <ScrollToHash />
+      <ScrollToTopAndHash />
       <AuthProvider>
         <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-[#1F2421]">
           <Navbar />

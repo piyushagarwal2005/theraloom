@@ -1,10 +1,16 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Heart, Sparkles } from 'lucide-react';
+import { ShieldCheck, Heart } from 'lucide-react';
 
 export default function Footer() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
 
   const handleNavClick = (e, sectionId) => {
     e.preventDefault();
@@ -18,13 +24,14 @@ export default function Footer() {
       navigate(`/#${sectionId}`);
     }
   };
+
   return (
     <footer className="bg-[#122B21] text-[#FAF8F5] pt-14 pb-8 border-t border-[#19382C]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-[#244E3E]/60">
           {/* Brand Column */}
           <div className="md:col-span-1 space-y-4">
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/" onClick={scrollToTop} className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-[#FAF8F5] flex items-center justify-center text-[#19382C] shadow-sm">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="9" cy="9" r="5" stroke="#19382C" strokeWidth="2" strokeDasharray="1 1" />
@@ -52,14 +59,18 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-[#FAF8F5]/80">
               <li>
-                <Link to="/register" className="hover:text-white transition-colors">
+                <Link to="/register" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Create Practice Profile
                 </Link>
               </li>
               <li>
-                <Link to="/#features" className="hover:text-white transition-colors">
+                <a
+                  href="/#pricing"
+                  onClick={(e) => handleNavClick(e, 'pricing')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
                   Clinical SOAP / DAP Notes
-                </Link>
+                </a>
               </li>
               <li>
                 <a
@@ -71,7 +82,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <Link to="/login" className="hover:text-white transition-colors">
+                <Link to="/login" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Therapist Portal Login
                 </Link>
               </li>
@@ -121,7 +132,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <Link to="/portal" className="hover:text-white transition-colors">
+                <Link to="/portal" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Client Booking Portal
                 </Link>
               </li>
@@ -135,7 +146,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <Link to="/crisis" className="hover:text-rose-300 transition-colors font-medium text-rose-200">
+                <Link to="/crisis" onClick={scrollToTop} className="hover:text-rose-300 transition-colors font-medium text-rose-200">
                   Emergency Helplines (India 14416)
                 </Link>
               </li>
@@ -156,7 +167,7 @@ export default function Footer() {
               <div>• Vandrevala: <a href="tel:+919999666555" className="font-bold text-white underline hover:text-emerald-300">+91 9999 666 555</a></div>
               <div>• KIRAN: <a href="tel:18005990019" className="font-bold text-white underline hover:text-emerald-300">1800-599-0019</a></div>
             </div>
-            <Link to="/crisis" className="inline-block text-[11px] text-[#A9BDA9] hover:text-white underline mt-2.5">
+            <Link to="/crisis" onClick={scrollToTop} className="inline-block text-[11px] text-[#A9BDA9] hover:text-white underline mt-2.5">
               View all 24x7 India helplines & protocols →
             </Link>
           </div>
@@ -166,9 +177,9 @@ export default function Footer() {
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-[#7D9D8B] gap-4">
           <p>© {new Date().getFullYear()} Theraloom (theraloom.in). All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Terms of Practice</Link>
-            <Link to="/security" className="hover:text-white transition-colors">Security & Compliance</Link>
+            <Link to="/privacy" onClick={scrollToTop} className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" onClick={scrollToTop} className="hover:text-white transition-colors">Terms of Practice</Link>
+            <Link to="/security" onClick={scrollToTop} className="hover:text-white transition-colors">Security & Compliance</Link>
           </div>
         </div>
       </div>
