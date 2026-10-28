@@ -113,6 +113,25 @@ const autoProvision = async () => {
         therapist = await Therapist.create(tData);
         await Availability.create({ therapistId: therapist._id });
         console.log(`[Auto-Provision] Created demo therapist: ${tData.name} (${tData.email})`);
+      } else {
+        // Ensure slug and isActive are synchronized for public profile lookup
+        let changed = false;
+        if (therapist.slug !== tData.slug) {
+          therapist.slug = tData.slug;
+          changed = true;
+        }
+        if (!therapist.isActive) {
+          therapist.isActive = true;
+          changed = true;
+        }
+        if (!therapist.services || therapist.services.length === 0) {
+          therapist.services = tData.services;
+          changed = true;
+        }
+        if (changed) {
+          await therapist.save();
+          console.log(`[Auto-Provision] Synchronized slug and active status for ${tData.name}`);
+        }
       }
     }
   } catch (err) {

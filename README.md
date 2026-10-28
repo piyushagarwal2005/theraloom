@@ -421,7 +421,7 @@ The backend test suite (`tests/runTests.js`) tests all core requirements:
 1. Push the repository to GitHub.
 2. In Vercel, set root directory to `theraloom-frontend`.
 3. Add environment variables:
-   - `VITE_API_BASE_URL=https://your-backend-api.onrender.com/api/v1`
+   - `VITE_API_BASE_URL=https://theraloom-api.onrender.com/api/v1`
    - `VITE_RAZORPAY_KEY_ID=rzp_test_theraloom_key123`
 4. Deploy.
 

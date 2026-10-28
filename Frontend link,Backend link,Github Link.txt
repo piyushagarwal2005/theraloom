@@ -1,0 +1,5 @@
+FRONTEND LINK- https://theraloom-seven.vercel.app/
+
+BACKEND LINK - https://theraloom-api.onrender.com
+
+GITHUB REPOSITARY LINK- https://github.com/piyushagarwal2005/theraloom
