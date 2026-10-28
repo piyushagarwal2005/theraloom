@@ -391,7 +391,7 @@ export default function Home() {
       </section>
 
       {/* 2. IDENTIFY YOUR PATTERN SECTION (The Unfazed Core Archetypes) */}
-      <section id="patterns" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="patterns" className="scroll-mt-28 py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <span className="text-xs font-bold uppercase tracking-wider text-[#7D9D8B]">
             Pattern Recognition
@@ -473,7 +473,7 @@ export default function Home() {
       </section>
 
       {/* 3. THE ANTI-GURU CLINICAL STANDARD (unfazed.in core stance) */}
-      <section id="anti-guru" className="py-20 bg-[#122B21] text-white border-y border-[#19382C]">
+      <section id="anti-guru" className="scroll-mt-28 py-20 bg-[#122B21] text-white border-y border-[#19382C]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="inline-flex items-center gap-1 text-xs font-bold tracking-wider uppercase text-[#A9BDA9] bg-[#19382C] px-3.5 py-1 rounded-full border border-[#244E3E]">
@@ -557,7 +557,7 @@ export default function Home() {
       </section>
 
       {/* 4. LOW-BARRIER ENTRY: THE ₹299 CLARITY SESSION SPOTLIGHT */}
-      <section id="clarity-session" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="clarity-session" className="scroll-mt-28 py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-3xl border border-[#EAE5DE] p-8 sm:p-12 shadow-sanctuary relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#E8EFEA]/40 rounded-full blur-3xl -z-10" />
 
@@ -612,7 +612,7 @@ export default function Home() {
       </section>
 
       {/* 5. THERAPIST DIRECTORY (Alma & unfazed.in Style Filtered Cards) */}
-      <section id="directory" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <section id="directory" className="scroll-mt-28 py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#7D9D8B]">
@@ -787,7 +787,7 @@ export default function Home() {
       </section>
 
       {/* 6. INTERACTIVE 3-STEP PATTERN-BREAK QUIZ (Resonance Matcher) */}
-      <section id="quiz" className="py-20 bg-[#19382C] text-white">
+      <section id="quiz" className="scroll-mt-28 py-20 bg-[#19382C] text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#A9BDA9] bg-[#244E3E] px-3.5 py-1 rounded-full">
             <Sparkle className="w-3.5 h-3.5" />
@@ -944,7 +944,7 @@ export default function Home() {
       </section>
 
       {/* 7. HOW CARE WORKS AT THERALOOM (4-Step Healing Journey) */}
-      <section id="how-it-works" className="py-20 bg-[#F4EFEB]/60 border-y border-[#EAE5DE]">
+      <section id="how-it-works" className="scroll-mt-28 py-20 bg-[#F4EFEB]/60 border-y border-[#EAE5DE]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-[#7D9D8B]">
@@ -1003,7 +1003,7 @@ export default function Home() {
       </section>
 
       {/* 8. STRAIGHT TALK (Anti-Bypassing FAQs Accordion) */}
-      <section id="faq" className="py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <section id="faq" className="scroll-mt-28 py-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         <div className="text-center space-y-3">
           <span className="text-xs font-bold uppercase tracking-wider text-[#7D9D8B]">
             Straight Talk
@@ -1049,7 +1049,7 @@ export default function Home() {
       </section>
 
       {/* 9. TRANSPARENT PRICING & PRACTITIONER TIERS (For Therapists) */}
-      <section id="pricing" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="pricing" className="scroll-mt-28 py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <span className="text-xs font-bold uppercase tracking-wider text-[#7D9D8B]">
             For Therapists & Practices

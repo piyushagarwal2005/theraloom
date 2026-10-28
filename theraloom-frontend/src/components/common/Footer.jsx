@@ -1,8 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Heart, Sparkles } from 'lucide-react';
 
 export default function Footer() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleNavClick = (e, sectionId) => {
+    e.preventDefault();
+    if (location.pathname === '/' || location.pathname === '') {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        window.history.pushState(null, '', `#${sectionId}`);
+      }
+    } else {
+      navigate(`/#${sectionId}`);
+    }
+  };
   return (
     <footer className="bg-[#122B21] text-[#FAF8F5] pt-14 pb-8 border-t border-[#19382C]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,9 +62,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/#pricing" className="hover:text-white transition-colors">
+                <a
+                  href="/#pricing"
+                  onClick={(e) => handleNavClick(e, 'pricing')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
                   Plans & Entitlements
-                </Link>
+                </a>
               </li>
               <li>
                 <Link to="/login" className="hover:text-white transition-colors">
@@ -66,24 +85,40 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-[#FAF8F5]/80">
               <li>
-                <Link to="/#patterns" className="hover:text-white transition-colors">
+                <a
+                  href="/#patterns"
+                  onClick={(e) => handleNavClick(e, 'patterns')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
                   Identify Your Pattern
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/#directory" className="hover:text-white transition-colors">
+                <a
+                  href="/#directory"
+                  onClick={(e) => handleNavClick(e, 'directory')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
                   Find Verified Clinicians
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/#clarity-session" className="hover:text-white transition-colors text-emerald-300 font-semibold">
+                <a
+                  href="/#clarity-session"
+                  onClick={(e) => handleNavClick(e, 'clarity-session')}
+                  className="hover:text-white transition-colors text-emerald-300 font-semibold cursor-pointer"
+                >
                   ₹299 Clarity Session
-                </Link>
+                </a>
               </li>
               <li>
-                <Link to="/#anti-guru" className="hover:text-white transition-colors">
+                <a
+                  href="/#anti-guru"
+                  onClick={(e) => handleNavClick(e, 'anti-guru')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
                   The Clinical Standard (No Bypassing)
-                </Link>
+                </a>
               </li>
               <li>
                 <Link to="/portal" className="hover:text-white transition-colors">
@@ -91,9 +126,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/#faq" className="hover:text-white transition-colors">
+                <a
+                  href="/#faq"
+                  onClick={(e) => handleNavClick(e, 'faq')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
                   Straight Talk FAQs
-                </Link>
+                </a>
               </li>
               <li>
                 <Link to="/crisis" className="hover:text-rose-300 transition-colors font-medium text-rose-200">

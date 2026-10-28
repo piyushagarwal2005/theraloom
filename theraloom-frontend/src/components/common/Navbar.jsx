@@ -59,6 +59,22 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   };
 
+  const handleNavClick = (e, sectionId) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+
+    // If on homepage, smooth scroll directly
+    if (location.pathname === '/' || location.pathname === '') {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        window.history.pushState(null, '', `#${sectionId}`);
+      }
+    } else {
+      navigate(`/#${sectionId}`);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full">
       {/* Top Crisis & Compliance Ribbon (unfazed.in / Clinical Standard) */}
@@ -103,32 +119,43 @@ export default function Navbar() {
             {/* Center Editorial Links for Guests */}
             {!isAuthenticated && (
               <div className="hidden lg:flex items-center space-x-6 text-xs font-semibold tracking-wide text-[#535C56]">
-                <Link
-                  to="/#patterns"
-                  className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5"
+                <a
+                  href="/#patterns"
+                  onClick={(e) => handleNavClick(e, 'patterns')}
+                  className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#7D9D8B]" />
                   <span>Break Your Pattern</span>
-                </Link>
-                <Link
-                  to="/#directory"
-                  className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5"
+                </a>
+                <a
+                  href="/#directory"
+                  onClick={(e) => handleNavClick(e, 'directory')}
+                  className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Search className="w-3.5 h-3.5 text-[#7D9D8B]" />
                   <span>Our Therapists</span>
-                </Link>
-                <Link to="/#anti-guru" className="hover:text-[#19382C] transition-colors py-1">
+                </a>
+                <a
+                  href="/#anti-guru"
+                  onClick={(e) => handleNavClick(e, 'anti-guru')}
+                  className="hover:text-[#19382C] transition-colors py-1 cursor-pointer"
+                >
                   The Clinical Standard
-                </Link>
-                <Link to="/#how-it-works" className="hover:text-[#19382C] transition-colors py-1">
+                </a>
+                <a
+                  href="/#how-it-works"
+                  onClick={(e) => handleNavClick(e, 'how-it-works')}
+                  className="hover:text-[#19382C] transition-colors py-1 cursor-pointer"
+                >
                   How Care Works
-                </Link>
-                <Link
-                  to="/#clarity-session"
-                  className="text-emerald-800 bg-[#E8EFEA] hover:bg-[#d8e6dc] px-3 py-1 rounded-full font-bold transition-colors"
+                </a>
+                <a
+                  href="/#clarity-session"
+                  onClick={(e) => handleNavClick(e, 'clarity-session')}
+                  className="text-emerald-800 bg-[#E8EFEA] hover:bg-[#d8e6dc] px-3 py-1 rounded-full font-bold transition-colors cursor-pointer"
                 >
                   ₹299 Clarity Session
-                </Link>
+                </a>
                 <Link
                   to="/portal"
                   className="text-[#19382C] hover:bg-[#E8EFEA] px-3 py-1.5 rounded-full border border-[#D5DDD8] transition-colors"
@@ -403,44 +430,44 @@ export default function Navbar() {
             {!isAuthenticated ? (
               <div className="space-y-2 text-sm font-semibold text-[#535C56]">
                 <a
-                  href="#patterns"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5] text-[#19382C] font-bold"
+                  href="/#patterns"
+                  onClick={(e) => handleNavClick(e, 'patterns')}
+                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5] text-[#19382C] font-bold cursor-pointer"
                 >
                   Break Your Pattern
                 </a>
                 <a
-                  href="#directory"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5]"
+                  href="/#directory"
+                  onClick={(e) => handleNavClick(e, 'directory')}
+                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5] cursor-pointer"
                 >
                   Our Accredited Therapists
                 </a>
                 <a
-                  href="#anti-guru"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5]"
+                  href="/#anti-guru"
+                  onClick={(e) => handleNavClick(e, 'anti-guru')}
+                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5] cursor-pointer"
                 >
                   The Clinical Standard (No Bypassing)
                 </a>
                 <a
-                  href="#how-it-works"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5]"
+                  href="/#how-it-works"
+                  onClick={(e) => handleNavClick(e, 'how-it-works')}
+                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5] cursor-pointer"
                 >
                   How Care Works
                 </a>
                 <a
-                  href="#clarity-session"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl bg-[#E8EFEA] text-[#19382C] font-bold"
+                  href="/#clarity-session"
+                  onClick={(e) => handleNavClick(e, 'clarity-session')}
+                  className="block px-3 py-2 rounded-xl bg-[#E8EFEA] text-[#19382C] font-bold cursor-pointer"
                 >
                   ₹299 Clarity Session
                 </a>
                 <a
-                  href="#pricing"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5]"
+                  href="/#pricing"
+                  onClick={(e) => handleNavClick(e, 'pricing')}
+                  className="block px-3 py-2 rounded-xl hover:bg-[#FAF8F5] cursor-pointer"
                 >
                   Pricing & Tiers
                 </a>
