@@ -67,6 +67,29 @@ app.get('/', (req, res) => {
   });
 });
 
+// API v1 base status & discovery endpoint
+app.get(['/api/v1', '/api/v1/'], (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: '🌿 Theraloom API v1 is active and ready to receive requests.',
+    status: 'healthy',
+    version: '1.0.0',
+    availableRoutes: {
+      health: '/api/v1/health',
+      auth: '/api/v1/auth',
+      therapists: '/api/v1/therapists/public',
+      scheduling: '/api/v1/scheduling',
+      tiers: '/api/v1/tiers',
+      clients: '/api/v1/clients',
+      payments: '/api/v1/payments',
+      notes: '/api/v1/notes',
+      chat: '/api/v1/chat',
+      analytics: '/api/v1/analytics',
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Health check endpoint
 app.get('/api/v1/health', (req, res) => {
   res.status(200).json({
