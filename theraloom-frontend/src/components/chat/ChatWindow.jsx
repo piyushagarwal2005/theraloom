@@ -50,11 +50,18 @@ export default function ChatWindow({
   useEffect(() => {
     if (!conversationId) return;
 
-    const socketUrl =
-      import.meta.env.VITE_SOCKET_URL ||
-      (import.meta.env.VITE_API_BASE_URL
-        ? import.meta.env.VITE_API_BASE_URL.replace(/\/api\/v1\/?$/, '')
-        : window.location.origin);
+    const isProductionHost =
+      typeof window !== 'undefined' &&
+      (window.location.hostname.endsWith('github.io') ||
+        window.location.hostname.endsWith('vercel.app'));
+
+    let socketUrl = import.meta.env.VITE_SOCKET_URL;
+    if (isProductionHost && (!socketUrl || socketUrl.includes('localhost'))) {
+      socketUrl = 'https://theraloom-api.onrender.com';
+    } else if (!socketUrl) {
+      socketUrl = 'https://theraloom-api.onrender.com';
+    }
+
     const socket = io(socketUrl, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
