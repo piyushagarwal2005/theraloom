@@ -103,32 +103,32 @@ export default function Navbar() {
             {/* Center Editorial Links for Guests */}
             {!isAuthenticated && (
               <div className="hidden lg:flex items-center space-x-6 text-xs font-semibold tracking-wide text-[#535C56]">
-                <a
-                  href="/#patterns"
+                <Link
+                  to="/#patterns"
                   className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#7D9D8B]" />
                   <span>Break Your Pattern</span>
-                </a>
-                <a
-                  href="/#directory"
+                </Link>
+                <Link
+                  to="/#directory"
                   className="hover:text-[#19382C] transition-colors py-1 flex items-center gap-1.5"
                 >
                   <Search className="w-3.5 h-3.5 text-[#7D9D8B]" />
                   <span>Our Therapists</span>
-                </a>
-                <a href="/#anti-guru" className="hover:text-[#19382C] transition-colors py-1">
+                </Link>
+                <Link to="/#anti-guru" className="hover:text-[#19382C] transition-colors py-1">
                   The Clinical Standard
-                </a>
-                <a href="/#how-it-works" className="hover:text-[#19382C] transition-colors py-1">
+                </Link>
+                <Link to="/#how-it-works" className="hover:text-[#19382C] transition-colors py-1">
                   How Care Works
-                </a>
-                <a
-                  href="/#clarity-session"
+                </Link>
+                <Link
+                  to="/#clarity-session"
                   className="text-emerald-800 bg-[#E8EFEA] hover:bg-[#d8e6dc] px-3 py-1 rounded-full font-bold transition-colors"
                 >
                   ₹299 Clarity Session
-                </a>
+                </Link>
                 <Link
                   to="/portal"
                   className="text-[#19382C] hover:bg-[#E8EFEA] px-3 py-1.5 rounded-full border border-[#D5DDD8] transition-colors"
@@ -205,8 +205,8 @@ export default function Navbar() {
                 <>
                   {/* Public Link Pill */}
                   {therapist?.slug && (
-                    <a
-                      href={`/${therapist.slug}`}
+                    <Link
+                      to={`/${therapist.slug}`}
                       target="_blank"
                       rel="noreferrer"
                       className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold bg-[#E8EFEA] text-[#19382C] hover:bg-[#d8e6dc] px-3.5 py-1.5 rounded-full transition-all border border-[#C5D7CC]"
@@ -214,7 +214,7 @@ export default function Navbar() {
                     >
                       <span>theraloom.in/{therapist.slug}</span>
                       <ExternalLink className="w-3.5 h-3.5 text-[#7D9D8B]" />
-                    </a>
+                    </Link>
                   )}
 
                   {/* Notifications Bell */}

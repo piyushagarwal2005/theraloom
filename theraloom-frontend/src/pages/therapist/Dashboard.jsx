@@ -59,9 +59,19 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-  const publicUrl = therapist?.slug
-    ? `${window.location.origin}/${therapist.slug}`
-    : `${window.location.origin}/dr-ananya-sharma`;
+  // Dynamic public URL that respects GitHub Pages repository subpath (/theraloom-live) and custom domains
+  const isGitHubPages =
+    typeof window !== 'undefined' &&
+    window.location.hostname.endsWith('github.io');
+  const pathSegments =
+    typeof window !== 'undefined'
+      ? window.location.pathname.split('/').filter(Boolean)
+      : [];
+  const repoPrefix =
+    isGitHubPages && pathSegments.length > 0 ? `/${pathSegments[0]}` : '';
+
+  const therapistSlug = therapist?.slug || 'dr-ananya-sharma';
+  const publicUrl = `${window.location.origin}${repoPrefix}/${therapistSlug}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(publicUrl);

@@ -66,24 +66,24 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-[#FAF8F5]/80">
               <li>
-                <a href="/#patterns" className="hover:text-white transition-colors">
+                <Link to="/#patterns" className="hover:text-white transition-colors">
                   Identify Your Pattern
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#directory" className="hover:text-white transition-colors">
+                <Link to="/#directory" className="hover:text-white transition-colors">
                   Find Verified Clinicians
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#clarity-session" className="hover:text-white transition-colors text-emerald-300 font-semibold">
+                <Link to="/#clarity-session" className="hover:text-white transition-colors text-emerald-300 font-semibold">
                   ₹299 Clarity Session
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#anti-guru" className="hover:text-white transition-colors">
+                <Link to="/#anti-guru" className="hover:text-white transition-colors">
                   The Clinical Standard (No Bypassing)
-                </a>
+                </Link>
               </li>
               <li>
                 <Link to="/portal" className="hover:text-white transition-colors">
@@ -91,9 +91,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="/#faq" className="hover:text-white transition-colors">
+                <Link to="/#faq" className="hover:text-white transition-colors">
                   Straight Talk FAQs
-                </a>
+                </Link>
               </li>
               <li>
                 <Link to="/crisis" className="hover:text-rose-300 transition-colors font-medium text-rose-200">
