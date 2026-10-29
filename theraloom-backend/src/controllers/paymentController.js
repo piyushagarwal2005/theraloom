@@ -292,7 +292,8 @@ exports.getInvoicePDF = async (req, res, next) => {
     }
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="invoice-${payment.invoiceNumber}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="invoice-${payment.invoiceNumber}.pdf"`);
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
     fs.createReadStream(filePath).pipe(res);
   } catch (error) {
     next(error);

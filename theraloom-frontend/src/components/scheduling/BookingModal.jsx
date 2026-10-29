@@ -22,6 +22,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import api from '../../api/axiosInstance';
+import { downloadInvoice } from '../../utils/downloadInvoice';
 
 export default function BookingModal({
   therapist,
@@ -33,6 +34,7 @@ export default function BookingModal({
   const [step, setStep] = useState(1); // 1: Service, 2: Slot, 3: Intake, 4: Payment, 5: Success
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   // Date and slot selection
   const todayStr = new Date().toISOString().split('T')[0];
@@ -938,25 +940,32 @@ export default function BookingModal({
                       {confirmedPayment?.invoiceNumber || `TL-INV-${confirmedBooking._id.slice(-6)}`}
                     </span>
                   </div>
-                  <a
-                    href={`/api/v1/payments/${confirmedPayment?._id || confirmedBooking._id}/invoice`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-md hover:bg-emerald-100 flex items-center gap-1.5"
+                  <button
+                    type="button"
+                    disabled={downloadingInvoice}
+                    onClick={async () => {
+                      const payId = confirmedPayment?._id || confirmedBooking?.paymentId || confirmedBooking?._id;
+                      const invNum = confirmedPayment?.invoiceNumber;
+                      setDownloadingInvoice(true);
+                      await downloadInvoice(payId, invNum);
+                      setDownloadingInvoice(false);
+                    }}
+                    className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download PDF</span>
-                  </a>
+                    <Download className={`w-3.5 h-3.5 ${downloadingInvoice ? 'animate-bounce' : ''}`} />
+                    <span>{downloadingInvoice ? 'Downloading...' : 'Download PDF'}</span>
+                  </button>
                 </div>
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a
-                  href={`/portal?email=${encodeURIComponent(confirmedBooking.clientEmail)}`}
+                <Link
+                  to={`/portal?email=${encodeURIComponent(confirmedBooking.clientEmail)}`}
+                  onClick={resetAndClose}
                   className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#19382C] text-white text-xs font-semibold hover:bg-[#244E3E] transition-all text-center"
                 >
                   Open Client Portal
-                </a>
+                </Link>
                 <button
                   onClick={resetAndClose}
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-[#EAE5DE] text-xs font-medium text-[#535C56] hover:bg-gray-50 transition-colors"

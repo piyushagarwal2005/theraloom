@@ -13,6 +13,10 @@ if (!fs.existsSync(invoiceDir)) {
 const generateInvoicePDF = async (payment, therapist) => {
   return new Promise((resolve, reject) => {
     try {
+      if (!fs.existsSync(invoiceDir)) {
+        fs.mkdirSync(invoiceDir, { recursive: true });
+      }
+
       const invoiceNumber = payment.invoiceNumber || `TL-INV-${Date.now().toString().slice(-6)}`;
       const fileName = `invoice-${invoiceNumber}.pdf`;
       const filePath = path.join(invoiceDir, fileName);

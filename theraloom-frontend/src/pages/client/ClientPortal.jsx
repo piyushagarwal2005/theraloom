@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import ChatWindow from '../../components/chat/ChatWindow';
 import api from '../../api/axiosInstance';
+import { downloadInvoice } from '../../utils/downloadInvoice';
 
 export default function ClientPortal() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,6 +29,7 @@ export default function ClientPortal() {
   const [activeEmail, setActiveEmail] = useState(emailParam);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState(null);
 
   // Loaded client data
   const [clientData, setClientData] = useState(null);
@@ -605,15 +607,19 @@ export default function ClientPortal() {
                             </div>
 
                             {(p.invoiceUrl || p._id) && (
-                              <a
-                                href={p.invoiceUrl || `/api/v1/payments/${p._id}/invoice`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-2 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] text-[#19382C] hover:bg-[#E8EFEA] transition-colors"
+                              <button
+                                type="button"
+                                disabled={downloadingInvoiceId === p._id}
+                                onClick={async () => {
+                                  setDownloadingInvoiceId(p._id);
+                                  await downloadInvoice(p._id, p.invoiceNumber);
+                                  setDownloadingInvoiceId(null);
+                                }}
+                                className="p-2 rounded-xl bg-[#FAF8F5] border border-[#EAE5DE] text-[#19382C] hover:bg-[#E8EFEA] transition-colors cursor-pointer disabled:opacity-50"
                                 title="Download GST Tax Invoice PDF"
                               >
-                                <Download className="w-4 h-4" />
-                              </a>
+                                <Download className={`w-4 h-4 ${downloadingInvoiceId === p._id ? 'animate-bounce text-emerald-700' : ''}`} />
+                              </button>
                             )}
                           </div>
                         </div>

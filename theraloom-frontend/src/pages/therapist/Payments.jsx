@@ -15,6 +15,7 @@ import {
 import Avatar from '../../components/common/Avatar';
 import api from '../../api/axiosInstance';
 import { useAuth } from '../../context/AuthContext';
+import { downloadInvoice } from '../../utils/downloadInvoice';
 
 export default function Payments() {
   const { therapist } = useAuth();
@@ -25,6 +26,7 @@ export default function Payments() {
   const [totalNetRevenue, setTotalNetRevenue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [downloadingId, setDownloadingId] = useState(null);
 
   // Create Package Modal
   const [pkgModalOpen, setPkgModalOpen] = useState(false);
@@ -311,15 +313,20 @@ export default function Payments() {
 
                           <td className="py-4 px-6 text-right">
                             {p.invoiceUrl || p._id ? (
-                              <a
-                                href={p.invoiceUrl || `/api/v1/payments/${p._id}/invoice`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#EAE5DE] bg-[#FAF8F5] text-xs font-semibold text-[#19382C] hover:bg-[#E8EFEA] transition-colors"
+                              <button
+                                type="button"
+                                disabled={downloadingId === p._id}
+                                onClick={async () => {
+                                  setDownloadingId(p._id);
+                                  await downloadInvoice(p._id, p.invoiceNumber);
+                                  setDownloadingId(null);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#EAE5DE] bg-[#FAF8F5] text-xs font-semibold text-[#19382C] hover:bg-[#E8EFEA] transition-colors disabled:opacity-50 cursor-pointer"
+                                title="Download GST Tax Invoice PDF"
                               >
-                                <Download className="w-3.5 h-3.5" />
-                                <span>PDF</span>
-                              </a>
+                                <Download className={`w-3.5 h-3.5 ${downloadingId === p._id ? 'animate-bounce' : ''}`} />
+                                <span>{downloadingId === p._id ? 'Downloading...' : 'PDF'}</span>
+                              </button>
                             ) : (
                               <span className="text-gray-400 text-[10px]">Processing</span>
                             )}
