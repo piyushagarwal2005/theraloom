@@ -278,18 +278,12 @@ exports.getInvoicePDF = async (req, res, next) => {
     }
 
     const therapist = await Therapist.findById(payment.therapistId);
-    let filePath;
 
-    if (payment.invoiceUrl) {
-      filePath = path.join(__dirname, '../../public', payment.invoiceUrl);
-    }
-
-    if (!filePath || !fs.existsSync(filePath)) {
-      const generated = await invoiceService.generateInvoicePDF(payment, therapist);
-      filePath = generated.filePath;
-      payment.invoiceUrl = generated.relativeUrl;
-      await payment.save();
-    }
+    // Always generate fresh authentic PDF invoice with executive typography and clean layout
+    const generated = await invoiceService.generateInvoicePDF(payment, therapist);
+    const filePath = generated.filePath;
+    payment.invoiceUrl = generated.relativeUrl;
+    await payment.save();
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="invoice-${payment.invoiceNumber}.pdf"`);
